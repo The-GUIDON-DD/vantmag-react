@@ -1,0 +1,26 @@
+name: Status update changes
+
+on:
+  schedule:
+    - cron: '0 6 * * 1,3,5'
+      timezone: "Asia/Manila"
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send TG Reminder
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TG_CHAT_ID }}
+          token: ${{ secrets.TG_NOTIFY_BOT_TOKEN }}
+          message_thread_id: ${{ secrets.TG_THREAD_ID }}
+          format: markdown
+          message: |
+            *[STATUS UPDATE]*
+
+            Hello <USERS>. Please update <QA> with the following format by *5PM today*:
+            1. Progress
+            2. Blockers
+            3. PR or Screenshots/Video for any progress you have
