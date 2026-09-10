@@ -1,0 +1,29 @@
+name: Notify when there are changes in main
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  notify:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send TG Reminder
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TG_CHAT_ID }}
+          token: ${{ secrets.TG_NOTIFY_BOT_TOKEN }}
+          message_thread_id: ${{ secrets.TG_THREAD_ID }}
+          format: markdown
+          message: |
+            *[CHANGES TO MAIN BRANCH]*
+
+            *PR Title*: ${{ github.event.pull_request.title }}
+            *PR Author*: ${{ github.event.pull_request.user.login }}
+            *PR URL*: ${{ github.event.pull_request.html_url }}
+
+            The main branch has been updated. Please pull/merge from the latest version of main.
