@@ -1,9 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "interactive-template",
-  "compatibility_date": "2026-08-15",
+  "name": "vantmag-react",
+  "main": "./workers/app.ts",
+  "compatibility_date": "2026-08-10",
   "observability": {
     "enabled": true
-  },
-  "main": "./workers/app.ts"
+  }
 }
