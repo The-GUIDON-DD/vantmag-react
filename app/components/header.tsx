@@ -42,10 +42,10 @@ export default function Header() {
   return (
     <header className="sticky w-screen py-4 flex flex-col justify-center items-center bg-vant-purple">
       <Link to="/">
-        <img src="/logo.svg" alt="Vantage Magazine" className="w-[15vw] mb-5" />
+        <img src="/logo.svg" alt="Vantage Magazine" className="w-[15vw] mb-6" />
       </Link>
       <nav>
-        <ul className="flex list-none text-white uppercase">
+        <ul className="flex list-none text-white uppercase font-bold text-lg">
           {links.map(({ title, path }, ix) => (
             <li key={title}>
               <Link to={path}>
