@@ -9,6 +9,7 @@
     "typecheck": "react-router typegen && tsc",
     "format": "pnpx @biomejs/biome format --write ./",
     "lint": "pnpx @biomejs/biome lint --write ./",
+    "check": "pnpx @biomejs/biome check",
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && wrangler dev",
     "cf-typegen": "wrangler types"

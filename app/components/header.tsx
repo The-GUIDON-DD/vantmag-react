@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
-import { IoSearchOutline } from "react-icons/io5";
 import { Link } from "react-router";
 
 const links = [
@@ -98,8 +97,11 @@ export default function Header() {
         </nav>
       </section>
       <Search hidden={!showSearch} />
-      <div
-        className="fixed z-2 h-screen w-screen bg-[rgba(0,0,0,0.5)] duration-350 transition-all"
+      <button
+        type="button"
+        onClick={() => setShowSearch((prev) => !prev)}
+        onKeyDown={() => setShowSearch((prev) => !prev)}
+        className="fixed z-2 h-screen w-screen bg-[rgba(0,0,0,0.5)] duration-350 transition-all border-none outline-none"
         style={{
           opacity: showSearch ? 1 : 0,
           pointerEvents: showSearch ? "auto" : "none",
