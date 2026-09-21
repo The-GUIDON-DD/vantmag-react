@@ -1,3 +1,6 @@
+import { Link } from "react-router";
+import Chip from "./chip";
+
 const socmedLinks = [
   {
     title: "Facebook",
@@ -25,12 +28,60 @@ const socmedLinks = [
     url: "https://www.youtube.com/@TheGuidon",
   },
 ];
+const categories = [
+  {
+    title: "TV & FILM",
+    path: "/category/tv-and-film",
+    icon: "/icons/chip/tv-and-film.svg",
+    color: "#ef3e68",
+  },
+  {
+    title: "FOOD",
+    path: "/category/food",
+    icon: "/icons/chip/food.svg",
+    color: "#f9a524",
+  },
+  {
+    title: "THEATER & ARTS",
+    path: "/category/theater-and-the-arts",
+    icon: "/icons/chip/theater-and-the-arts.svg",
+    color: "#755489",
+  },
+  {
+    title: "MUSIC",
+    path: "/category/music",
+    icon: "/icons/chip/music.svg",
+    color: "#b5c932",
+  },
+  {
+    title: "HYPE",
+    path: "/category/hype",
+    icon: "/icons/chip/hype.svg",
+    color: "#d63ba3",
+  },
+  {
+    title: "HUB",
+    path: "/category/hub",
+    icon: "/icons/chip/hub.svg",
+    color: "#3dbb95",
+  },
+  {
+    title: "EXPOSÉ",
+    path: "/category/expose",
+    icon: "/icons/chip/expose.svg",
+    color: "#f6B50b",
+  },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-vant-purple h-[35vh] w-full px-[20vw] pt-15 md:grid-cols-3 md:grid gap-5 text-white">
-      <section className="w-full flex flex-col">
-        <img alt="Vantage Magazine" src="/logo.svg" className="w-full pb-6" />
+    <footer className="bg-vant-purple min-h-fit w-full  px-[15vw] md:px-[10vw] xl:px-[20vw] py-15 flex flex-col items-stretch lg:grid-cols-3 lg:grid gap-5 text-white">
+      <section className="min-w-fit w-full flex flex-col order-first">
+        <img
+          alt="Vantage Magazine"
+          src="/logo.svg"
+          className="w-full pb-6 min-w-[300px]"
+        />
         <p className="pb-4">
           We are The GUIDON's online magazine, a publication geared towards
           campus culture and the people who make it.
@@ -60,8 +111,15 @@ export default function Footer() {
           <p>The GUIDON Archives</p>
         </a>
       </section>
-      <section className="mt-8">
+      <section className="mt-8 md:order-last">
         <p className="font-bold uppercase">Categories</p>
+        <section className="w-full flex flex-wrap gap-4 mt-4">
+          {categories.map(({ title, path, icon, color }) => (
+            <Link to={path} key={title}>
+              <Chip title={title} icon={icon} color={color} />
+            </Link>
+          ))}
+        </section>
       </section>
     </footer>
   );
