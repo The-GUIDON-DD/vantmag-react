@@ -63,16 +63,21 @@ export default function Header() {
   const [showSearch, setShowSearch] = useState(false);
 
   return (
-    <header className="sticky w-screen flex flex-col items-stretch">
+    <header className="sticky w-screen flex flex-col items-stretch justify-center">
       <section className="py-4 w-full flex flex-col justify-center items-center bg-vant-purple z-10">
         <Link to="/">
           <img
+            src="/logos/LongFormVantMag.svg"
+            alt="Vantage Magazine"
+            className="lg:hidden min-w-40 max-w-50 w-[30vw] mt-4 mb-4"
+          />
+          <img
             src="/logo.svg"
             alt="Vantage Magazine"
-            className="w-[15vw] mb-6"
+            className="hidden lg:block min-w-80 lg:w-[20vw] mt-4 mb-4 lg:mt-0 lg:mb-6"
           />
         </Link>
-        <nav className="flex grid-cols-3 gap-15">
+        <nav className="grid-cols-3 gap-15 hidden lg:flex">
           <section className="col-start-2 justify-self-center">
             <ul className="flex list-none text-white uppercase font-bold text-lg">
               {links.map(({ title, path }, ix) => (
@@ -101,7 +106,7 @@ export default function Header() {
         type="button"
         onClick={() => setShowSearch((prev) => !prev)}
         onKeyDown={() => setShowSearch((prev) => !prev)}
-        className="fixed z-2 h-screen w-screen bg-[rgba(0,0,0,0.5)] duration-350 transition-all border-none outline-none"
+        className="fixed z-2 min-h-screen h-full w-screen bg-[rgba(0,0,0,0.5)] duration-350 transition-all border-none outline-none"
         style={{
           opacity: showSearch ? 1 : 0,
           pointerEvents: showSearch ? "auto" : "none",
