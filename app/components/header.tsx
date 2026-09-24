@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
+import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
 import { Form, Link } from "react-router";
 
 const links = [
@@ -41,28 +42,81 @@ const links = [
   },
 ];
 
+function SearchBar({ width = "50vw" }: { width?: string | number }) {
+  return (
+    <section
+      className="bg-white rounded-full px-5 py-4 flex items-center"
+      style={{ width: width }}
+    >
+      <CgSearch className="text-vant-purple text-3xl mr-5" />
+      <Form action="/search" className="grow">
+        <input
+          type="text"
+          name="s"
+          placeholder="Search an article, author, or category"
+          className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-md lg:text-xl"
+        />
+      </Form>
+    </section>
+  );
+}
+
 function Search({ hidden = true }: { hidden?: boolean }) {
   return (
     <section
       className="w-full flex justify-center items-center py-6 h-28 bg-[#dddffe] transition-transform duration-500 z-5"
       style={{ transform: hidden ? "translateY(-100%)" : "" }}
     >
-      <section className="bg-white h-full rounded-full w-[50vw] px-5 flex items-center">
-        <CgSearch className="text-vant-purple text-3xl mr-5" />
-        <Form action="/search">
-          <input
-            type="text"
-            name="s"
-            className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-2xl"
-          />
-        </Form>
-      </section>
+      <SearchBar />
     </section>
+  );
+}
+function Sidebar({ hideSidebar }: { hideSidebar: () => void }) {
+  return (
+    <aside className="fixed inset-0 h-dvh w-dvw flex flex-col bg-vant-purple px-10">
+      <button
+        type="button"
+        id="sidebar-btn"
+        className="fixed z-10 outline-none top-9 left-8  text-white text-3xl"
+        onClick={hideSidebar}
+      >
+        <RxCross1 />
+      </button>
+      <section className="py-4 w-full flex flex-col justify-center items-center z-10">
+        <Link to="/">
+          <img
+            src="/logos/LongFormVantMag.svg"
+            alt="Vantage Magazine"
+            className="lg:hidden min-w-40 max-w-50 w-[30vw] mt-4 mb-4"
+          />
+          <img
+            src="/logo.svg"
+            alt="Vantage Magazine"
+            className="hidden lg:block min-w-80 lg:w-[20vw] mt-4 mb-4 lg:mt-0 lg:mb-6"
+          />
+        </Link>
+      </section>
+      <SearchBar width="100%" />
+      <nav>
+        <ul className="mt-8 list-none flex flex-col items-stretch gap-4 text-white uppercase font-bold text-lg">
+          {links.map(({ title, path }) => (
+            <li key={title}>
+              <Link to={path}>{title}</Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
   );
 }
 
 export default function Header() {
   const [showSearch, setShowSearch] = useState(false);
+  const [showSidebar, setShowSideBar] = useState(false);
+
+  if (showSidebar) {
+    return <Sidebar hideSidebar={() => setShowSideBar(false)} />;
+  }
 
   return (
     <header className="sticky w-screen flex flex-col items-stretch justify-center">
@@ -114,6 +168,14 @@ export default function Header() {
           pointerEvents: showSearch ? "auto" : "none",
         }}
       />
+      <button
+        type="button"
+        id="sidebar-btn"
+        className="fixed z-10 outline-none top-9 left-8  text-white text-3xl"
+        onClick={() => setShowSideBar(true)}
+      >
+        <RxHamburgerMenu />
+      </button>
     </header>
   );
 }
