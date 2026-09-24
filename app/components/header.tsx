@@ -108,7 +108,7 @@ export default function Header() {
         type="button"
         onClick={() => setShowSearch((prev) => !prev)}
         onKeyDown={() => setShowSearch((prev) => !prev)}
-        className="fixed z-2 min-h-screen h-full w-screen bg-[rgba(0,0,0,0.5)] duration-350 transition-all border-none outline-none"
+        className="fixed z-2 h-dvh w-dvw inset-0 bg-[rgba(0,0,0,0.5)] duration-350 transition-all border-none outline-none"
         style={{
           opacity: showSearch ? 1 : 0,
           pointerEvents: showSearch ? "auto" : "none",
