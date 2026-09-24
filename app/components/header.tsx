@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
-import { Link } from "react-router";
+import { Form, Link } from "react-router";
 
 const links = [
   {
@@ -42,7 +42,6 @@ const links = [
 ];
 
 function Search({ hidden = true }: { hidden?: boolean }) {
-  /** TODO: add in search bar **/
   return (
     <section
       className="w-full flex justify-center items-center py-6 h-28 bg-[#dddffe] transition-transform duration-500 z-5"
@@ -50,10 +49,13 @@ function Search({ hidden = true }: { hidden?: boolean }) {
     >
       <section className="bg-white h-full rounded-full w-[50vw] px-5 flex items-center">
         <CgSearch className="text-vant-purple text-3xl mr-5" />
-        <input
-          type="text"
-          className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-2xl"
-        />
+        <Form action="/search">
+          <input
+            type="text"
+            name="s"
+            className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-2xl"
+          />
+        </Form>
       </section>
     </section>
   );
