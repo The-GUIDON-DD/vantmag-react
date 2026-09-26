@@ -14,7 +14,8 @@ const ArticleSchema = z.object({
 
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
-// TODO: unit tests for this
+// TODO: fetch media using id
+
 export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
