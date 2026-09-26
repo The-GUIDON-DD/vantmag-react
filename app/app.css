@@ -4,6 +4,7 @@
   --font-sans:
     "Roboto", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Calluna";
   --color-vant-purple: #5d61ba;
 }
 
@@ -16,4 +17,13 @@ body {
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }
+}
+
+@font-face {
+  font-family: "Calluna";
+  font-style: normal;
+  font-weight: normal;
+  src:
+    local("Calluna"),
+    url("/public/fonts/calluna/calluna.woff") format("woff");
 }
