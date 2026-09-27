@@ -1,4 +1,4 @@
-import type { ArticleData, Author } from "./types";
+import type { ArticleData } from "./types";
 
 export function getSocMedUrlsFromArticle(article: ArticleData) {
   return {
@@ -6,10 +6,4 @@ export function getSocMedUrlsFromArticle(article: ArticleData) {
     twitter: `http://x.com/share?url=https://vantage.theguidon.com/${article.slug}&text=${encodeURIComponent(article.title)}`,
     x: `http://x.com/share?url=https://vantage.theguidon.com/${article.slug}&text=${encodeURIComponent(article.title)}`,
   };
-}
-
-export function getBylinesFromAuthors(authors: Author[]) {
-  if (authors.length === 0) {
-    return null;
-  }
 }
