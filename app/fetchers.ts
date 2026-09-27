@@ -21,8 +21,10 @@ const MediaSchema = z.object({
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
-export async function retrieveMediaFromID(id: number): Promise<string> {
-  const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`);
+export async function retrieveMediaFromID(id: number) {
+  const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`).then(
+    (res) => res.json(),
+  );
   const parsedData: MediaResponse = MediaSchema.parse(data);
 
   return parsedData.description.rendered;
@@ -42,7 +44,7 @@ export async function retrieveArticleFromSlug(
     title: article.title.rendered,
     slug: slug,
     authors: article.authors,
-    featured_image: "",
+    featured_image: article.featured_media,
     category: article.categories[0],
     pubDate: article.date,
     excerpt: article.excerpt.rendered,

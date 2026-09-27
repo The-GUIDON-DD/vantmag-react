@@ -9,7 +9,7 @@ export interface ArticleData {
   title: string;
   slug: string;
   authors: Author[];
-  featured_image: string;
+  featured_image: number;
   category: number;
   pubDate: string;
   excerpt: string;

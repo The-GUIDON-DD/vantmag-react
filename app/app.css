@@ -23,3 +23,10 @@ body {
     local("Calluna"),
     url("/public/fonts/calluna/calluna.woff") format("woff");
 }
+
+.article-featured .attachment,
+.article-featured img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
