@@ -40,13 +40,20 @@ export async function retrieveArticleFromSlug(
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
   const article = parsedData[0];
 
+  const date = new Date(article.date);
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+
   return {
     title: article.title.rendered,
     slug: slug,
     authors: article.authors,
     featured_image: article.featured_media,
     category: article.categories[0],
-    pubDate: article.date,
+    pubDate: formattedDate,
     excerpt: article.excerpt.rendered,
     content: article.content.rendered,
   };
