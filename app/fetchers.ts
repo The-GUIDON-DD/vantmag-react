@@ -14,9 +14,19 @@ const ArticleSchema = z
   })
   .array();
 
+const MediaSchema = z.object({
+  description: z.object({ rendered: z.string() }),
+});
+
+type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
-// TODO: fetch media using id
+export async function retrieveMediaFromID(id: number): Promise<string> {
+  const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`);
+  const parsedData: MediaResponse = MediaSchema.parse(data);
+
+  return parsedData.description.rendered;
+}
 
 export async function retrieveArticleFromSlug(
   slug: string,
