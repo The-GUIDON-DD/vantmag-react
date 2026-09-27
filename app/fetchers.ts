@@ -22,7 +22,7 @@ export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
   const data = await fetch(
-    `${BASE_URL}/posts?slug=${slug}&_fields=slug,date,title.rendered,content.rendered,excerpt.rendered,categories,authors.slug,authors.display_name,featured_media`,
+    `${BASE_URL}/posts?slug=${slug}&_fields=slug,date,title.rendered,content.rendered,excerpt.rendered,categories,authors,featured_media`,
   ).then((res) => res.json());
 
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
