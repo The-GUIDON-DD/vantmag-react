@@ -1,16 +1,18 @@
 import { z } from "zod";
 import { type ArticleData, BASE_URL } from "./types";
 
-const ArticleSchema = z.object({
-  title: z.string(),
-  slug: z.string(),
-  authors: z.object({ slug: z.string(), display_name: z.string() }).array(),
-  categories: z.number().array(),
-  featured_media: z.number(),
-  date: z.iso.datetime(),
-  excerpt: z.object({ rendered: z.string() }),
-  content: z.object({ rendered: z.string() }),
-});
+const ArticleSchema = z
+  .object({
+    title: z.object({ rendered: z.string() }),
+    slug: z.string(),
+    authors: z.object({ slug: z.string(), display_name: z.string() }).array(),
+    categories: z.number().array(),
+    featured_media: z.number(),
+    date: z.iso.datetime({ local: true }),
+    excerpt: z.object({ rendered: z.string() }),
+    content: z.object({ rendered: z.string() }),
+  })
+  .array();
 
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
@@ -24,15 +26,16 @@ export async function retrieveArticleFromSlug(
   ).then((res) => res.json());
 
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
+  const article = parsedData[0];
 
   return {
-    title: parsedData.title,
+    title: article.title.rendered,
     slug: slug,
-    authors: parsedData.authors,
+    authors: article.authors,
     featured_image: "",
-    category: parsedData.categories[0],
-    pubDate: parsedData.date,
-    excerpt: parsedData.excerpt.rendered,
-    content: parsedData.content.rendered,
+    category: article.categories[0],
+    pubDate: article.date,
+    excerpt: article.excerpt.rendered,
+    content: article.content.rendered,
   };
 }
