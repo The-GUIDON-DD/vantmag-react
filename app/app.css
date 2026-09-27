@@ -17,3 +17,23 @@ body {
     color-scheme: dark;
   }
 }
+
+.category-article {
+  transition: background-color 150ms ease;
+}
+
+.category-article:hover,
+.category-article:focus-within {
+  background-color: var(--category-article-highlight);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-article img {
+    transition: transform 200ms ease;
+  }
+
+  .category-article:hover img,
+  .category-article:focus-within img {
+    transform: scale(1.04);
+  }
+}
