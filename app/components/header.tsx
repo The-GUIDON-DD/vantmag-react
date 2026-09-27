@@ -64,8 +64,8 @@ function SearchBar({ width = "50vw" }: { width?: string | number }) {
 function Search({ hidden = true }: { hidden?: boolean }) {
   return (
     <section
-      className="w-full flex justify-center items-center py-6 h-28 bg-[#dddffe] transition-transform duration-500 z-5"
-      style={{ transform: hidden ? "translateY(-100%)" : "" }}
+      className="w-full flex justify-center items-center py-6 h-28 bg-[#dddffe] transition-transform duration-500 z-5 absolute bottom-0 left-0"
+      style={{ transform: hidden ? "" : "translateY(100%)" }}
     >
       <SearchBar />
     </section>
@@ -119,7 +119,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky w-screen flex flex-col items-stretch justify-center">
+    <header className="sticky w-screen flex flex-col items-stretch justify-center relative">
       <section className="py-4 w-full flex flex-col justify-center items-center bg-vant-purple z-10">
         <Link to="/">
           <img
