@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { FaFacebook, FaXTwitter } from "react-icons/fa6";
 import { Link } from "react-router";
+import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
 import { retrieveArticleFromSlug, retrieveMediaFromID } from "~/fetchers";
 import { getSocMedUrlsFromArticle } from "~/utils";
@@ -68,13 +69,11 @@ export default function Article({ params }: Route.ComponentProps) {
             dangerouslySetInnerHTML={{ __html: media ?? "" }}
           />
         </section>
-        <section className="bg-vant-purple px-6 lg:px-20 py-8 text-white flex flex-col gap-2">
+        <section className="bg-vant-purple px-6 lg:px-[5%] py-8 text-white flex flex-col gap-2 text-md lg:text-xl">
           <p>Written by</p>
-          <Link to={`/author/${data.authors[0].slug}`}>
-            <p className="font-display text-3xl hover:underline">
-              {data.authors[0].display_name}
-            </p>
-          </Link>
+          <p className="font-display text-3xl lg:text-4xl article-bylines">
+            <Bylines authors={data.authors} />
+          </p>
           <p>{data.pubDate}</p>
         </section>
         <section

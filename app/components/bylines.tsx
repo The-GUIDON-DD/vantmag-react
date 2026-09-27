@@ -12,7 +12,7 @@ export default function Bylines({ authors }: { authors: Author[] }) {
     );
   } else if (authors.length === 2) {
     return (
-      <p>
+      <>
         <Link to={`/author/${authors[0].slug}`}>
           <span>{authors[0].display_name}</span>
         </Link>{" "}
@@ -20,11 +20,11 @@ export default function Bylines({ authors }: { authors: Author[] }) {
         <Link to={`/author/${authors[1].slug}`}>
           <span>{authors[1].display_name}</span>
         </Link>
-      </p>
+      </>
     );
   } else {
     return (
-      <p>
+      <>
         {authors.map(({ slug, display_name }, ix) => (
           <span key={display_name}>
             {ix === authors.length - 1 && "and "}
@@ -34,7 +34,7 @@ export default function Bylines({ authors }: { authors: Author[] }) {
             {ix < authors.length - 1 && ", "}
           </span>
         ))}
-      </p>
+      </>
     );
   }
 }

@@ -30,3 +30,7 @@ body {
   height: 100%;
   object-fit: cover;
 }
+
+.article-bylines a:hover {
+  text-decoration: underline;
+}
