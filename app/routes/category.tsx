@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { Await } from "react-router";
+import ArticleCard, { type ArticleCardPost } from "../components/article-card";
 import type { Route } from "./+types/category";
 
 // sorry for the magic number but this is how many are in the og one
@@ -26,7 +27,14 @@ const categoryIds: Record<string, number> = {
 
 const categories: Record<
   string,
-  { id: number; name: string; description: string; icon: string; color: string }
+  {
+    id: number;
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    descriptionColor: string;
+  }
 > = {
   expose: {
     id: categoryIds.expose,
@@ -34,7 +42,8 @@ const categories: Record<
     description:
       "As persons for and with others, we simply can’t forget what’s happening in the world today.",
     icon: "/icons/chip/expose.svg",
-    color: "#f6b50b",
+    color: "#F6B40B",
+    descriptionColor: "#FCF0CD",
   },
   food: {
     id: categoryIds.food,
@@ -42,7 +51,8 @@ const categories: Record<
     description:
       "From the bistros of Katipunan to the hole-in-the-wall joints along Maginhawa, there’s something for every foodie on this side of the culinary scene.",
     icon: "/icons/chip/food.svg",
-    color: "#f9a524",
+    color: "#F9A523",
+    descriptionColor: "#FEECD3",
   },
   hub: {
     id: categoryIds.hub,
@@ -50,7 +60,8 @@ const categories: Record<
     description:
       "Take a glimpse at Ateneo’s vibrant campus culture! In this beat, we focus on the heart of the university—its students.",
     icon: "/icons/chip/hub.svg",
-    color: "#3dbb95",
+    color: "#3DBB95",
+    descriptionColor: "#D8F1E9",
   },
   hype: {
     id: categoryIds.hype,
@@ -58,15 +69,17 @@ const categories: Record<
     description:
       "We bring you the latest and the greatest trends in pop culture from an Atenean lens.",
     icon: "/icons/chip/hype.svg",
-    color: "#d63ba3",
+    color: "#D63AA2",
+    descriptionColor: "#F7D8EC",
   },
   music: {
     id: categoryIds.music,
     name: "Music",
     description:
-      "Whether it be a gig at Mow’s Bar or an open mic event at Areté, the Atenean music scene resounds loudly and proudly.",
+      "Whether it be a gig at Mow’s Bar or an open mic event at Areté, the Atenean music scene resounds loudly and proudly. Brimming with talent in genres of every kind, there’s something for every music fan.",
     icon: "/icons/chip/music.svg",
-    color: "#b5c932",
+    color: "#B5C832",
+    descriptionColor: "#F0F4D6",
   },
   "theater-and-the-arts": {
     id: categoryIds["theater-and-the-arts"],
@@ -74,7 +87,8 @@ const categories: Record<
     description:
       "Everything from literature and theater to the fine arts; we take you to the stages and pages of the best offerings from artists.",
     icon: "/icons/chip/theater-and-the-arts.svg",
-    color: "#755489",
+    color: "#745488",
+    descriptionColor: "#E3DDE6",
   },
   "tv-and-film": {
     id: categoryIds["tv-and-film"],
@@ -82,45 +96,16 @@ const categories: Record<
     description:
       "From the small screen to the big, we explore the world of film—from the best of Philippine cinema to the international scene.",
     icon: "/icons/chip/tv-and-film.svg",
-    color: "#ef3e68",
+    color: "#EE3E68",
+    descriptionColor: "#FCD8E0",
   },
 };
 
-// defines the Post based on structure of the WordPress API response
-type Post = {
-  id: number;
-  date: string;
-  link: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
-  authors?: { display_name: string }[];
-  _embedded?: {
-    "wp:featuredmedia"?: { source_url?: string; alt_text?: string }[];
-  };
-};
-
-type PostsPage = { posts: Post[]; hasMore: boolean };
+type PostsPage = { posts: ArticleCardPost[]; hasMore: boolean };
 const cachedPages = new Map<
   string,
   { expiresAt: number; promise: Promise<PostsPage> }
 >();
-
-// data cleanup
-function plainText(html: string) {
-  if (typeof DOMParser === "undefined") return html.replace(/<[^>]*>/g, "");
-  const document = new DOMParser().parseFromString(html, "text/html");
-  return document.body.textContent?.trim() ?? "";
-}
-
-function postDate(date: string) {
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
-}
 
 // Share in-flight requests and briefly reuse pages for return visits and Show more.
 function getCachedPosts(
@@ -164,7 +149,7 @@ async function getPosts(
   if (!response.ok)
     throw new Error(`Could not load articles (${response.status})`);
 
-  const results = (await response.json()) as Post[];
+  const results = (await response.json()) as ArticleCardPost[];
   return {
     posts: results.slice(0, pageSize),
     hasMore: results.length > pageSize,
@@ -185,110 +170,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 clientLoader.hydrate = true as const;
 
-// define size of the image based on post type and will put placeholder for when no image is available
-function PostImage({
-  post,
-  variant,
-}: {
-  post: Post;
-  variant: "primary" | "secondary" | "grid";
-}) {
-  const image = post._embedded?.["wp:featuredmedia"]?.[0];
-  const shape = {
-    primary: "aspect-[14/5]",
-    secondary: "aspect-square",
-    grid: "aspect-[8/5]",
-  }[variant];
-
-  if (!image?.source_url)
-    return <div className={`${shape} rounded bg-slate-100`} />;
-
-  return (
-    <img
-      src={image.source_url}
-      alt={image.alt_text || ""}
-      loading={variant === "primary" ? "eager" : "lazy"}
-      className={`${shape} w-full rounded object-cover`}
-    />
-  );
-}
-
-// show author and date of post
-function Byline({ post, className = "" }: { post: Post; className?: string }) {
-  const authors = post.authors?.map((author) => author.display_name).join(", ");
-  return (
-    <p
-      className={`text-sm uppercase leading-tight text-neutral-600 ${className}`}
-    >
-      {authors && <span className="block font-bold">By {authors}</span>}
-      <time dateTime={post.date}>{postDate(post.date)}</time>
-    </p>
-  );
-}
-
-// displays a featured post with a primary or secondary layout
-function FeaturedPost({
-  post,
-  primary = false,
-}: {
-  post: Post;
-  primary?: boolean;
-}) {
-  return (
-    <article
-      className={`category-article -m-3 rounded-lg p-3 ${
-        primary
-          ? "space-y-4"
-          : "grid grid-cols-[minmax(0,44.6%)_minmax(0,1fr)] gap-6"
-      }`}
-    >
-      <a href={post.link} className="block overflow-hidden rounded">
-        <PostImage post={post} variant={primary ? "primary" : "secondary"} />
-      </a>
-      <div>
-        <h2
-          className={
-            primary
-              ? "text-[32px] font-bold leading-[1.15]"
-              : "text-lg font-bold leading-tight"
-          }
-        >
-          <a href={post.link} className="hover:underline">
-            {plainText(post.title.rendered)}
-          </a>
-        </h2>
-        <p className="mt-2 line-clamp-3 text-sm leading-[1.2]">
-          {plainText(post.excerpt.rendered)}
-        </p>
-        <Byline post={post} className={primary ? "mt-6" : "mt-3"} />
-      </div>
-    </article>
-  );
-}
-
-// for the all artilces grid
-function ArticleCard({ post }: { post: Post }) {
-  return (
-    <article className="category-article -m-3 flex h-full flex-col rounded-lg p-3">
-      <a href={post.link} className="block overflow-hidden rounded">
-        <PostImage post={post} variant="grid" />
-      </a>
-      <h3 className="mt-4 text-base font-bold leading-tight">
-        <a href={post.link} className="hover:underline">
-          {plainText(post.title.rendered)}
-        </a>
-      </h3>
-      <p className="mt-2 line-clamp-3 text-sm leading-[1.2]">
-        {plainText(post.excerpt.rendered)}
-      </p>
-      <Byline post={post} className="mt-auto pt-6" />
-    </article>
-  );
-}
-
 type CategoryData = {
   category: (typeof categories)[string];
-  posts: Post[];
+  posts: ArticleCardPost[];
   hasMore: boolean;
 };
 
@@ -332,7 +216,7 @@ function CategoryContent({ data }: { data: CategoryData }) {
 
   return (
     <div
-      className="mx-auto w-full max-w-[1080px] px-5 pt-12 pb-20"
+      className="mx-auto w-full max-w-[1240px] px-4 pt-6 pb-20 lg:w-[85%] lg:px-5 lg:pt-10"
       style={
         {
           "--category-article-highlight": `color-mix(in srgb, ${data.category.color} 18%, white)`,
@@ -344,10 +228,21 @@ function CategoryContent({ data }: { data: CategoryData }) {
           aria-label="Featured articles"
           className="mb-[72px] grid gap-8 lg:grid-cols-[5fr_4fr]"
         >
-          <FeaturedPost post={featured[0]} primary />
+          <ArticleCard
+            post={featured[0]}
+            category={data.category}
+            variant="featured"
+            showCategory={false}
+          />
           <div className="grid gap-8 self-start">
             {featured.slice(1).map((post) => (
-              <FeaturedPost key={post.id} post={post} />
+              <ArticleCard
+                key={post.id}
+                post={post}
+                category={data.category}
+                variant="featured-row"
+                showCategory={false}
+              />
             ))}
           </div>
         </section>
@@ -360,15 +255,20 @@ function CategoryContent({ data }: { data: CategoryData }) {
           <div className="mb-6 flex items-center gap-3">
             <h2
               id="all-articles-heading"
-              className="shrink-0 font-serif text-4xl font-bold md:text-5xl"
+              className="shrink-0 font-display text-[28px] font-bold md:text-4xl lg:text-5xl"
             >
               All Articles
             </h2>
-            <div className="h-px flex-1 bg-neutral-900" />
+            <div className="h-px flex-1 bg-neutral-900 lg:bg-neutral-400" />
           </div>
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
             {remaining.map((post) => (
-              <ArticleCard key={post.id} post={post} />
+              <ArticleCard
+                key={post.id}
+                post={post}
+                category={data.category}
+                showCategory={false}
+              />
             ))}
           </div>
         </section>
@@ -401,39 +301,36 @@ export default function Category({ loaderData }: Route.ComponentProps) {
   const { slug, category, postsPage } = loaderData;
   return (
     // keeping this while we don't have a dark mode design for the category page (if ever)
-    <div className="min-h-screen bg-white text-black">
+    <div className="category-page min-h-screen bg-white font-sans text-black">
       <section
-        className="grid md:grid-cols-[45%_55%]"
-        style={{
-          backgroundColor: `color-mix(in srgb, ${category.color} 20%, white)`,
-        }}
+        className="grid rounded-br-[45px] lg:grid-cols-[45%_55%]"
+        style={{ backgroundColor: category.descriptionColor }}
       >
         <div
-          className="flex items-center justify-center gap-6 rounded-br-3xl px-8 py-10 text-white md:px-12 xl:px-20"
+          className="flex items-center justify-center gap-3 rounded-b-[18px] px-8 py-3.5 text-white lg:gap-6 lg:rounded-bl-none lg:rounded-br-[45px] lg:px-12 lg:py-10 xl:px-20"
           style={{ backgroundColor: category.color }}
         >
           <img
             src={category.icon}
             alt=""
-            className="h-16 w-16 shrink-0 object-contain xl:h-[72px] xl:w-[72px]"
+            className="h-8 w-8 shrink-0 object-contain lg:h-16 lg:w-16 xl:h-[72px] xl:w-[72px]"
           />
-          <h1 className="text-center font-serif text-5xl font-bold leading-[1.05] md:text-6xl xl:text-[72px]">
+          <h1 className="text-center font-display text-[32px] leading-[1.05] lg:text-6xl xl:text-[72px]">
             {category.name}
           </h1>
         </div>
-        <p className="flex items-center px-8 py-8 text-lg font-medium leading-tight md:px-12 md:py-14 xl:px-20 xl:text-xl">
+        <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-[50px] lg:pr-[120px] lg:pl-20 lg:leading-tight">
           {category.description}
         </p>
       </section>
-      <Suspense
-        fallback={
-          <p className="mx-auto max-w-[1080px] px-5 py-12">Loading articles…</p>
-        }
-      >
+      <Suspense>
         <Await
           resolve={postsPage}
           errorElement={
-            <p role="alert" className="mx-auto max-w-[1080px] px-5 py-12">
+            <p
+              role="alert"
+              className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
+            >
               Could not load articles. Please try again.
             </p>
           }

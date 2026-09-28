@@ -28,6 +28,13 @@ body {
   transition: background-color 150ms ease;
 }
 
+/* using this to detect when to switch to mobile view since i'm not sure
+what specific width we will be using yet*/
+body:has(.category-page) header.sticky,
+body:has(.category-page) aside.fixed {
+  z-index: 50;
+}
+
 .category-article:hover,
 .category-article:focus-within {
   background-color: var(--category-article-highlight);
