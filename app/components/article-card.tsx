@@ -4,6 +4,7 @@ export type ArticleCardPost = {
   id: number;
   date: string;
   link: string;
+  slug: string;
   title: { rendered: string };
   excerpt: { rendered: string };
   authors?: { display_name: string }[];
@@ -81,6 +82,7 @@ function Byline({
   post: ArticleCardPost;
   className?: string;
 }) {
+  // TODO: Use shared Bylines when /author/:slug is routed; it renders author links.
   const authors = post.authors?.map((author) => author.display_name).join(", ");
   return (
     <p
@@ -101,8 +103,11 @@ export default function ArticleCard({
   showCategory = true,
 }: ArticleCardProps) {
   const featured = variant === "featured" || variant === "featured-row";
+  // TODO: currently links to wordpress articles, swtich to  `/${post.slug}`
+  // when local article implementation is done.
+  const articleHref = post.link;
   const title = (
-    <a href={post.link} className="hover:underline">
+    <a href={articleHref} className="hover:underline">
       {plainText(post.title.rendered)}
     </a>
   );
@@ -127,7 +132,7 @@ export default function ArticleCard({
             : "flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,52%)_minmax(0,1fr)] lg:items-center lg:gap-6 xl:grid-cols-[minmax(0,40%)_minmax(0,1fr)]"
         }`}
       >
-        <a href={post.link} className="block overflow-hidden rounded">
+        <a href={articleHref} className="block overflow-hidden rounded">
           <PostImage post={post} variant={variant} />
         </a>
         <div>
@@ -158,7 +163,7 @@ export default function ArticleCard({
       }
     >
       <a
-        href={post.link}
+        href={articleHref}
         className={
           row
             ? "block min-w-0 flex-[1_1_120px] overflow-hidden rounded"

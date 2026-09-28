@@ -6,97 +6,63 @@ import {
   useState,
 } from "react";
 import { Await } from "react-router";
+import { categories } from "../../constants";
 import ArticleCard, { type ArticleCardPost } from "../components/article-card";
+import { BASE_URL } from "../types";
 import type { Route } from "./+types/category";
 
 // sorry for the magic number but this is how many are in the og one
 const PAGE_SIZE = 9;
 const MORE_PAGE_SIZE = 6;
-const POSTS_URL = "https://vantage.theguidon.com/wp-json/wp/v2/posts";
 const CACHE_TTL_MS = 60_000;
 
-const categoryIds: Record<string, number> = {
-  expose: 244,
-  food: 12,
-  hub: 242,
-  hype: 243,
-  music: 4,
-  "theater-and-the-arts": 11,
-  "tv-and-film": 13,
+type CategoryDetails = {
+  name: string;
+  description: string;
+  descriptionColor: string;
 };
 
-const categories: Record<
-  string,
-  {
-    id: number;
-    name: string;
-    description: string;
-    icon: string;
-    color: string;
-    descriptionColor: string;
-  }
-> = {
+const categoryDetails: Record<string, CategoryDetails> = {
   expose: {
-    id: categoryIds.expose,
     name: "Exposé",
     description:
       "As persons for and with others, we simply can’t forget what’s happening in the world today.",
-    icon: "/icons/chip/expose.svg",
-    color: "#F6B40B",
     descriptionColor: "#FCF0CD",
   },
   food: {
-    id: categoryIds.food,
     name: "Food",
     description:
       "From the bistros of Katipunan to the hole-in-the-wall joints along Maginhawa, there’s something for every foodie on this side of the culinary scene.",
-    icon: "/icons/chip/food.svg",
-    color: "#F9A523",
     descriptionColor: "#FEECD3",
   },
   hub: {
-    id: categoryIds.hub,
     name: "Hub",
     description:
       "Take a glimpse at Ateneo’s vibrant campus culture! In this beat, we focus on the heart of the university—its students.",
-    icon: "/icons/chip/hub.svg",
-    color: "#3DBB95",
     descriptionColor: "#D8F1E9",
   },
   hype: {
-    id: categoryIds.hype,
     name: "Hype",
     description:
       "We bring you the latest and the greatest trends in pop culture from an Atenean lens.",
-    icon: "/icons/chip/hype.svg",
-    color: "#D63AA2",
     descriptionColor: "#F7D8EC",
   },
   music: {
-    id: categoryIds.music,
     name: "Music",
     description:
       "Whether it be a gig at Mow’s Bar or an open mic event at Areté, the Atenean music scene resounds loudly and proudly. Brimming with talent in genres of every kind, there’s something for every music fan.",
-    icon: "/icons/chip/music.svg",
-    color: "#B5C832",
     descriptionColor: "#F0F4D6",
   },
   "theater-and-the-arts": {
-    id: categoryIds["theater-and-the-arts"],
     name: "Theater and the Arts",
     description:
       "Everything from literature and theater to the fine arts; we take you to the stages and pages of the best offerings from artists.",
-    icon: "/icons/chip/theater-and-the-arts.svg",
-    color: "#745488",
     descriptionColor: "#E3DDE6",
   },
   "tv-and-film": {
-    id: categoryIds["tv-and-film"],
     name: "TV & Film",
     description:
       "From the small screen to the big, we explore the world of film—from the best of Philippine cinema to the international scene.",
-    icon: "/icons/chip/tv-and-film.svg",
-    color: "#EE3E68",
     descriptionColor: "#FCD8E0",
   },
 };
@@ -107,7 +73,8 @@ const cachedPages = new Map<
   { expiresAt: number; promise: Promise<PostsPage> }
 >();
 
-// Share in-flight requests and briefly reuse pages for return visits and Show more.
+// TODO: Use the app's TanStack Query cache when root exports its QueryClient
+// for clientLoader; for now, this cache also shares in-flight requests.
 function getCachedPosts(
   categoryId: number,
   offset: number,
@@ -131,13 +98,14 @@ function getCachedPosts(
   return promise;
 }
 
-// fetches posts per category based on requested page number
+// TODO: Move this pagination request to app/fetchers.ts when it supports
+// category lists with embedded media and a hasMore result.
 async function getPosts(
   categoryId: number,
   offset: number,
   pageSize: number,
 ): Promise<PostsPage> {
-  const url = new URL(POSTS_URL);
+  const url = new URL(`${BASE_URL}/posts`);
   url.searchParams.set("categories", String(categoryId));
   url.searchParams.set("orderby", "date");
   url.searchParams.set("order", "desc");
@@ -158,8 +126,14 @@ async function getPosts(
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const slug = params.slug ?? "";
-  const category = categories[slug];
-  if (!category) throw new Response("Category not found", { status: 404 });
+  const sharedCategory = categories.find(
+    // ({ path }) => path === `/category/${slug}`,
+    ({ path }) => path === `/category/${slug}`,
+  );
+  const details = categoryDetails[slug];
+  if (!sharedCategory || !details)
+    throw new Response("Category not found", { status: 404 });
+  const category = { ...sharedCategory, ...details };
 
   return {
     slug,
@@ -171,7 +145,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 clientLoader.hydrate = true as const;
 
 type CategoryData = {
-  category: (typeof categories)[string];
+  category: (typeof categories)[number] & CategoryDetails;
   posts: ArticleCardPost[];
   hasMore: boolean;
 };
