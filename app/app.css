@@ -50,3 +50,14 @@ body:has(.category-page) aside.fixed {
     transform: scale(1.04);
   }
 }
+
+.article-featured .attachment,
+.article-featured img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-bylines a:hover {
+  text-decoration: underline;
+}

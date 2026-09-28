@@ -14,27 +14,46 @@ const ArticleSchema = z
   })
   .array();
 
+const MediaSchema = z.object({
+  description: z.object({ rendered: z.string() }),
+});
+
+type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
-// TODO: fetch media using id
+export async function retrieveMediaFromID(id: number) {
+  const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`).then(
+    (res) => res.json(),
+  );
+  const parsedData: MediaResponse = MediaSchema.parse(data);
+
+  return parsedData.description.rendered;
+}
 
 export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
   const data = await fetch(
-    `${BASE_URL}/posts?slug=${slug}&_fields=slug,date,title.rendered,content.rendered,excerpt.rendered,categories,authors.slug,authors.display_name,featured_media`,
+    `${BASE_URL}/posts?slug=${slug}&_fields=slug,date,title.rendered,content.rendered,excerpt.rendered,categories,authors,featured_media`,
   ).then((res) => res.json());
 
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
   const article = parsedData[0];
 
+  const date = new Date(article.date);
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+
   return {
     title: article.title.rendered,
     slug: slug,
     authors: article.authors,
-    featured_image: "",
+    featured_image: article.featured_media,
     category: article.categories[0],
-    pubDate: article.date,
+    pubDate: formattedDate,
     excerpt: article.excerpt.rendered,
     content: article.content.rendered,
   };
