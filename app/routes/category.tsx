@@ -1,20 +1,13 @@
-import {
-  type CSSProperties,
-  Suspense,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, Suspense, useRef, useState } from "react";
 import { Await } from "react-router";
 import { categories } from "../../constants";
 import ArticleCard, { type ArticleCardPost } from "../components/article-card";
 import { BASE_URL } from "../types";
 import type { Route } from "./+types/category";
 
-// sorry for the magic number but this is how many are in the og one
+// Match the number of articles in the original category layout.
 const PAGE_SIZE = 9;
 const MORE_PAGE_SIZE = 6;
-const CACHE_TTL_MS = 60_000;
 
 type CategoryDetails = {
   name: string;
@@ -54,7 +47,7 @@ const categoryDetails: Record<string, CategoryDetails> = {
     descriptionColor: "#F0F4D6",
   },
   "theater-and-the-arts": {
-    name: "Theater and the Arts",
+    name: "Theater & Arts",
     description:
       "Everything from literature and theater to the fine arts; we take you to the stages and pages of the best offerings from artists.",
     descriptionColor: "#E3DDE6",
@@ -67,39 +60,14 @@ const categoryDetails: Record<string, CategoryDetails> = {
   },
 };
 
-type PostsPage = { posts: ArticleCardPost[]; hasMore: boolean };
-const cachedPages = new Map<
-  string,
-  { expiresAt: number; promise: Promise<PostsPage> }
->();
+type PostsPage = {
+  posts: ArticleCardPost[];
+  hasMore: boolean;
+};
 
-// TODO: Use the app's TanStack Query cache when root exports its QueryClient
-// for clientLoader; for now, this cache also shares in-flight requests.
-function getCachedPosts(
-  categoryId: number,
-  offset: number,
-  pageSize: number,
-): Promise<PostsPage> {
-  const key = `${categoryId}:${offset}:${pageSize}`;
-  const cached = cachedPages.get(key);
-  if (cached && cached.expiresAt > Date.now()) return cached.promise;
-
-  const promise = getPosts(categoryId, offset, pageSize);
-  const entry = { expiresAt: Number.POSITIVE_INFINITY, promise };
-  cachedPages.set(key, entry);
-  void promise.then(
-    () => {
-      entry.expiresAt = Date.now() + CACHE_TTL_MS;
-    },
-    () => {
-      if (cachedPages.get(key) === entry) cachedPages.delete(key);
-    },
-  );
-  return promise;
-}
-
-// TODO: Move this pagination request to app/fetchers.ts when it supports
-// category lists with embedded media and a hasMore result.
+// Temporary category-list fetcher. The shared fetchers currently load only
+// individual articles and media; move this request there when they support
+// paginated category lists with embedded images and a hasMore result.
 async function getPosts(
   categoryId: number,
   offset: number,
@@ -113,9 +81,10 @@ async function getPosts(
   url.searchParams.set("per_page", String(pageSize + 1));
   url.searchParams.set("_embed", "1");
 
-  const response = await fetch(url);
-  if (!response.ok)
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
     throw new Error(`Could not load articles (${response.status})`);
+  }
 
   const results = (await response.json()) as ArticleCardPost[];
   return {
@@ -127,18 +96,20 @@ async function getPosts(
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const slug = params.slug ?? "";
   const sharedCategory = categories.find(
-    // ({ path }) => path === `/category/${slug}`,
     ({ path }) => path === `/category/${slug}`,
   );
   const details = categoryDetails[slug];
-  if (!sharedCategory || !details)
+
+  if (!sharedCategory || !details) {
     throw new Response("Category not found", { status: 404 });
+  }
+
   const category = { ...sharedCategory, ...details };
 
   return {
     slug,
     category,
-    postsPage: getCachedPosts(category.id, 0, PAGE_SIZE),
+    postsPage: getPosts(category.id, 0, PAGE_SIZE),
   };
 }
 
@@ -156,24 +127,24 @@ function CategoryContent({ data }: { data: CategoryData }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingMoreRef = useRef(false);
   const [loadError, setLoadError] = useState("");
-  const featured = posts.slice(0, 3);
-  const remaining = posts.slice(3);
+  const featuredPosts = posts.slice(0, 3);
+  const remainingPosts = posts.slice(3);
 
-  useEffect(() => {
-    if (hasMore) {
-      void getCachedPosts(data.category.id, posts.length, MORE_PAGE_SIZE).catch(
-        () => {},
-      );
-    }
-  }, [data.category.id, posts.length, hasMore]);
+  const highlightStyle = {
+    "--category-article-highlight": `color-mix(in srgb, ${data.category.color} 18%, white)`,
+  } as CSSProperties;
 
   async function loadMore() {
-    if (loadingMoreRef.current || !hasMore) return;
+    if (!hasMore || loadingMoreRef.current) {
+      return;
+    }
+
     loadingMoreRef.current = true;
     setLoadingMore(true);
     setLoadError("");
+
     try {
-      const next = await getCachedPosts(
+      const next = await getPosts(
         data.category.id,
         posts.length,
         MORE_PAGE_SIZE,
@@ -190,26 +161,22 @@ function CategoryContent({ data }: { data: CategoryData }) {
 
   return (
     <div
-      className="mx-auto w-full max-w-[1240px] px-4 pt-6 pb-20 lg:w-[85%] lg:px-5 lg:pt-10"
-      style={
-        {
-          "--category-article-highlight": `color-mix(in srgb, ${data.category.color} 18%, white)`,
-        } as CSSProperties
-      }
+      className="mx-auto w-full max-w-[1240px] px-4 pt-6 pb-20 lg:w-[90%] lg:px-5 lg:pt-10"
+      style={highlightStyle}
     >
-      {featured.length > 0 ? (
+      {featuredPosts.length > 0 ? (
         <section
           aria-label="Featured articles"
-          className="mb-[72px] grid gap-8 lg:grid-cols-[5fr_4fr]"
+          className="mb-10 grid gap-8 md:mb-12 lg:grid-cols-[5fr_4fr]"
         >
           <ArticleCard
-            post={featured[0]}
+            post={featuredPosts[0]}
             category={data.category}
             variant="featured"
             showCategory={false}
           />
           <div className="grid gap-8 self-start">
-            {featured.slice(1).map((post) => (
+            {featuredPosts.slice(1).map((post) => (
               <ArticleCard
                 key={post.id}
                 post={post}
@@ -224,7 +191,7 @@ function CategoryContent({ data }: { data: CategoryData }) {
         <p>No articles in this category yet.</p>
       )}
 
-      {remaining.length > 0 && (
+      {remainingPosts.length > 0 && (
         <section aria-labelledby="all-articles-heading">
           <div className="mb-6 flex items-center gap-3">
             <h2
@@ -235,8 +202,8 @@ function CategoryContent({ data }: { data: CategoryData }) {
             </h2>
             <div className="h-px flex-1 bg-neutral-900 lg:bg-neutral-400" />
           </div>
-          <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
-            {remaining.map((post) => (
+          <div className="grid gap-8 lg:grid-cols-3 lg:gap-8">
+            {remainingPosts.map((post) => (
               <ArticleCard
                 key={post.id}
                 post={post}
@@ -270,45 +237,46 @@ function CategoryContent({ data }: { data: CategoryData }) {
 }
 
 export default function Category({ loaderData }: Route.ComponentProps) {
-  if (!loaderData) return <p className="p-8">Loading articles…</p>;
+  if (!loaderData) {
+    return <p className="p-8">Loading articles…</p>;
+  }
 
   const { slug, category, postsPage } = loaderData;
+  const articleError = (
+    <p
+      role="alert"
+      className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
+    >
+      Could not load articles. Please try again.
+    </p>
+  );
+
   return (
-    // keeping this while we don't have a dark mode design for the category page (if ever)
     <div className="category-page min-h-screen bg-white font-sans text-black">
       <section
-        className="grid rounded-br-[45px] lg:grid-cols-[45%_55%]"
+        className="grid lg:grid-cols-[45%_55%] lg:rounded-br-[45px]"
         style={{ backgroundColor: category.descriptionColor }}
       >
         <div
-          className="flex items-center justify-center gap-3 rounded-b-[18px] px-8 py-3.5 text-white lg:gap-6 lg:rounded-bl-none lg:rounded-br-[45px] lg:px-12 lg:py-10 xl:px-20"
+          className="flex items-center justify-center gap-3 rounded-b-[18px] px-8 py-3.5 text-white lg:gap-5 lg:rounded-bl-none lg:rounded-br-[45px] lg:px-12 lg:py-7 xl:gap-6 xl:px-20 xl:py-10"
           style={{ backgroundColor: category.color }}
         >
           <img
             src={category.icon}
             alt=""
-            className="h-8 w-8 shrink-0 object-contain lg:h-16 lg:w-16 xl:h-[72px] xl:w-[72px]"
+            className="h-8 w-8 shrink-0 object-contain lg:h-12 lg:w-12 xl:h-[72px] xl:w-[72px]"
           />
-          <h1 className="text-center font-display text-[32px] leading-[1.05] lg:text-6xl xl:text-[72px]">
+          <h1 className="text-left font-display text-[32px] leading-[1.05] lg:text-5xl xl:text-[72px]">
             {category.name}
           </h1>
         </div>
-        <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-[50px] lg:pr-[120px] lg:pl-20 lg:leading-tight">
+        <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-11 lg:pr-20 lg:pl-16 lg:leading-tight xl:py-[50px] xl:pr-[120px] xl:pl-20">
           {category.description}
         </p>
       </section>
+      {/* TODO: Add a category-specific fallback while the first page loads. */}
       <Suspense>
-        <Await
-          resolve={postsPage}
-          errorElement={
-            <p
-              role="alert"
-              className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
-            >
-              Could not load articles. Please try again.
-            </p>
-          }
-        >
+        <Await resolve={postsPage} errorElement={articleError}>
           {(page) => (
             <CategoryContent key={slug} data={{ category, ...page }} />
           )}
