@@ -1,8 +1,8 @@
-import { type CSSProperties, Suspense, useRef, useState } from "react";
-import { Await } from "react-router";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import type { CSSProperties } from "react";
 import { categories } from "../../constants";
-import ArticleCard, { type ArticleCardPost } from "../components/article-card";
-import { BASE_URL } from "../types";
+import ArticleCard from "../components/article-card";
+import { retrieveCategoryPosts } from "../fetchers";
 import type { Route } from "./+types/category";
 
 // Match the number of articles in the original category layout.
@@ -60,104 +60,54 @@ const categoryDetails: Record<string, CategoryDetails> = {
   },
 };
 
-type PostsPage = {
-  posts: ArticleCardPost[];
-  hasMore: boolean;
-};
+type CategoryData = (typeof categories)[number] & CategoryDetails;
 
-// Temporary category-list fetcher. The shared fetchers currently load only
-// individual articles and media; move this request there when they support
-// paginated category lists with embedded images and a hasMore result.
-async function getPosts(
-  categoryId: number,
-  offset: number,
-  pageSize: number,
-): Promise<PostsPage> {
-  const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set("categories", String(categoryId));
-  url.searchParams.set("orderby", "date");
-  url.searchParams.set("order", "desc");
-  url.searchParams.set("offset", String(offset));
-  url.searchParams.set("per_page", String(pageSize + 1));
-  url.searchParams.set("_embed", "1");
+function CategoryContent({ category }: { category: CategoryData }) {
+  const {
+    data,
+    isPending,
+    isError,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["category-posts", category.id],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      retrieveCategoryPosts(
+        category.id,
+        pageParam,
+        pageParam === 0 ? PAGE_SIZE : MORE_PAGE_SIZE,
+      ),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.hasMore
+        ? pages.reduce((count, page) => count + page.posts.length, 0)
+        : undefined,
+  });
 
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`Could not load articles (${response.status})`);
+  if (isPending) {
+    return <p className="p-8">Loading articles…</p>;
   }
 
-  const results = (await response.json()) as ArticleCardPost[];
-  return {
-    posts: results.slice(0, pageSize),
-    hasMore: results.length > pageSize,
-  };
-}
-
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const slug = params.slug ?? "";
-  const sharedCategory = categories.find(
-    ({ path }) => path === `/category/${slug}`,
-  );
-  const details = categoryDetails[slug];
-
-  if (!sharedCategory || !details) {
-    throw new Response("Category not found", { status: 404 });
+  if (isError && !data) {
+    return (
+      <p
+        role="alert"
+        className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
+      >
+        Could not load articles. Please try again.
+      </p>
+    );
   }
 
-  const category = { ...sharedCategory, ...details };
-
-  return {
-    slug,
-    category,
-    postsPage: getPosts(category.id, 0, PAGE_SIZE),
-  };
-}
-
-clientLoader.hydrate = true as const;
-
-type CategoryData = {
-  category: (typeof categories)[number] & CategoryDetails;
-  posts: ArticleCardPost[];
-  hasMore: boolean;
-};
-
-function CategoryContent({ data }: { data: CategoryData }) {
-  const [posts, setPosts] = useState(data.posts);
-  const [hasMore, setHasMore] = useState(data.hasMore);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const loadingMoreRef = useRef(false);
-  const [loadError, setLoadError] = useState("");
+  const posts = data.pages.flatMap((page) => page.posts);
   const featuredPosts = posts.slice(0, 3);
   const remainingPosts = posts.slice(3);
 
   const highlightStyle = {
-    "--category-article-highlight": `color-mix(in srgb, ${data.category.color} 18%, white)`,
+    "--category-article-highlight": `color-mix(in srgb, ${category.color} 18%, white)`,
   } as CSSProperties;
-
-  async function loadMore() {
-    if (!hasMore || loadingMoreRef.current) {
-      return;
-    }
-
-    loadingMoreRef.current = true;
-    setLoadingMore(true);
-    setLoadError("");
-
-    try {
-      const next = await getPosts(
-        data.category.id,
-        posts.length,
-        MORE_PAGE_SIZE,
-      );
-      setPosts((current) => [...current, ...next.posts]);
-      setHasMore(next.hasMore);
-    } catch {
-      setLoadError("Could not load more articles. Please try again.");
-    } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
-    }
-  }
 
   return (
     <div
@@ -171,7 +121,7 @@ function CategoryContent({ data }: { data: CategoryData }) {
         >
           <ArticleCard
             post={featuredPosts[0]}
-            category={data.category}
+            category={category}
             variant="featured"
             showCategory={false}
           />
@@ -180,7 +130,7 @@ function CategoryContent({ data }: { data: CategoryData }) {
               <ArticleCard
                 key={post.id}
                 post={post}
-                category={data.category}
+                category={category}
                 variant="featured-row"
                 showCategory={false}
               />
@@ -207,7 +157,7 @@ function CategoryContent({ data }: { data: CategoryData }) {
               <ArticleCard
                 key={post.id}
                 post={post}
-                category={data.category}
+                category={category}
                 showCategory={false}
               />
             ))}
@@ -215,41 +165,39 @@ function CategoryContent({ data }: { data: CategoryData }) {
         </section>
       )}
 
-      {hasMore && (
+      {hasNextPage && (
         <div className="mt-14 text-center">
           <button
             type="button"
-            onClick={loadMore}
-            disabled={loadingMore}
+            onClick={() => void fetchNextPage()}
+            disabled={isFetchingNextPage}
             className="rounded-full bg-[#dddffe] px-16 py-2.5 text-sm font-bold uppercase text-vant-purple hover:bg-[#cdd0ff] disabled:opacity-60"
           >
-            {loadingMore ? "Loading…" : "Show me more"}
+            {isFetchingNextPage ? "Loading…" : "Show me more"}
           </button>
         </div>
       )}
-      {loadError && (
+      {isFetchNextPageError && (
         <p role="alert" className="mt-4 text-center text-red-700">
-          {loadError}
+          Could not load more articles. Please try again.
         </p>
       )}
     </div>
   );
 }
 
-export default function Category({ loaderData }: Route.ComponentProps) {
-  if (!loaderData) {
-    return <p className="p-8">Loading articles…</p>;
+export default function Category({ params }: Route.ComponentProps) {
+  const slug = params.slug ?? "";
+  const sharedCategory = categories.find(
+    ({ path }) => path === `/category/${slug}`,
+  );
+  const details = categoryDetails[slug];
+
+  if (!sharedCategory || !details) {
+    throw new Response("Category not found", { status: 404 });
   }
 
-  const { slug, category, postsPage } = loaderData;
-  const articleError = (
-    <p
-      role="alert"
-      className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
-    >
-      Could not load articles. Please try again.
-    </p>
-  );
+  const category = { ...sharedCategory, ...details };
 
   return (
     <div className="category-page min-h-screen bg-white font-sans text-black">
@@ -274,14 +222,7 @@ export default function Category({ loaderData }: Route.ComponentProps) {
           {category.description}
         </p>
       </section>
-      {/* TODO: Add a category-specific fallback while the first page loads. */}
-      <Suspense>
-        <Await resolve={postsPage} errorElement={articleError}>
-          {(page) => (
-            <CategoryContent key={slug} data={{ category, ...page }} />
-          )}
-        </Await>
-      </Suspense>
+      <CategoryContent key={slug} category={category} />
     </div>
   );
 }

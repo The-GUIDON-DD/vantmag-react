@@ -1,17 +1,5 @@
+import type { ArticleCardPost } from "../types";
 import Chip from "./chip";
-
-export type ArticleCardPost = {
-  id: number;
-  date: string;
-  link: string;
-  slug: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
-  authors?: { display_name: string }[];
-  _embedded?: {
-    "wp:featuredmedia"?: { source_url?: string; alt_text?: string }[];
-  };
-};
 
 type ArticleCardCategory = {
   name: string;
