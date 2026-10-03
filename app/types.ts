@@ -5,28 +5,20 @@ export interface Author {
   display_name: string;
 }
 
-export interface ArticleCardData {
+export interface ArticleData {
   title: string;
   slug: string;
   authors: Author[];
   featured_image: number;
-  thumbnail?: string;
   category: number;
   pubDate: string;
   excerpt: string;
-}
-
-export interface ArticleData extends ArticleCardData {
   content: string;
 }
+
+export type ArticleCardData = Omit<ArticleData, "content">;
 
 export interface ArticleSearchResults {
   articles: ArticleCardData[];
   totalPages: number;
-}
-
-export interface AuthorResult {
-  id: number;
-  slug: string;
-  name: string;
 }

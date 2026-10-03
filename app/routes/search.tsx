@@ -5,7 +5,9 @@ import Chip from "~/components/chip";
 import {
   retrieveArticlesFromSearch,
   retrieveAuthorsFromSearch,
+  retrieveMediaFromID,
 } from "~/fetchers";
+import type { ArticleCardData } from "~/types";
 import { categories } from "../../constants";
 
 export function meta() {
@@ -13,6 +15,54 @@ export function meta() {
     { title: "Search - Vantage Magazine" },
     { name: "description", content: "Search Vantage Magazine." },
   ];
+}
+
+function ArticleCard({ article }: { article: ArticleCardData }) {
+  const category = categories.find(({ id }) => id === article.category);
+  const mediaID = article.featured_image;
+  const { data: media } = useQuery({
+    queryKey: ["rendered", mediaID],
+    queryFn: () => retrieveMediaFromID(mediaID),
+    enabled: !!mediaID,
+  });
+
+  return (
+    <li className="flex flex-col sm:flex-row gap-4 border-b border-gray-200 pb-8">
+      {!!mediaID && (
+        <section
+          className="w-full sm:w-48 flex-none aspect-[3/2] overflow-hidden bg-gray-100 article-featured"
+          // biome-ignore lint: needed to embed content from WordPress API
+          dangerouslySetInnerHTML={{ __html: media ?? "" }}
+        />
+      )}
+      <section className="flex flex-col gap-2">
+        {category && (
+          <Chip
+            title={category.title}
+            icon={category.icon}
+            color={category.color}
+          />
+        )}
+        <Link to={`/${article.slug}`}>
+          <h2
+            className="font-display text-2xl lg:text-3xl text-black"
+            // biome-ignore lint: needed to embed content from WordPress API
+            dangerouslySetInnerHTML={{ __html: article.title }}
+          />
+        </Link>
+        <p
+          className="text-gray-500"
+          // biome-ignore lint: needed to embed content from WordPress API
+          dangerouslySetInnerHTML={{ __html: article.excerpt }}
+        />
+        <section className="flex gap-2 text-sm text-gray-400 article-bylines">
+          <Bylines authors={article.authors} />
+          <span>&middot;</span>
+          <span>{article.pubDate}</span>
+        </section>
+      </section>
+    </li>
+  );
 }
 
 export default function Search() {
@@ -109,13 +159,13 @@ export default function Search() {
         <section className="flex flex-col gap-4">
           <p className="font-bold uppercase text-gray-400 text-lg">Authors</p>
           <ul className="list-none flex flex-wrap gap-6">
-            {authorResults.map(({ slug, name }) => (
+            {authorResults.map(({ slug, display_name }) => (
               <li key={slug}>
                 <Link
                   to={`/author/${slug}`}
                   className="text-vant-purple font-bold text-lg hover:underline"
                 >
-                  {name}
+                  {display_name}
                 </Link>
               </li>
             ))}
@@ -127,54 +177,9 @@ export default function Search() {
         <section className="flex flex-col gap-6">
           <p className="font-bold uppercase text-gray-400 text-lg">Articles</p>
           <ul className="list-none flex flex-col gap-8">
-            {articleResults.articles.map((article) => {
-              const category = categories.find(
-                ({ id }) => id === article.category,
-              );
-              return (
-                <li
-                  key={article.slug}
-                  className="flex flex-col sm:flex-row gap-4 border-b border-gray-200 pb-8"
-                >
-                  {article.thumbnail && (
-                    <Link
-                      to={`/${article.slug}`}
-                      className="block w-full sm:w-48 flex-none aspect-[3/2] overflow-hidden"
-                    >
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </Link>
-                  )}
-                  <section className="flex flex-col gap-2">
-                    {category && (
-                      <Chip
-                        title={category.title}
-                        icon={category.icon}
-                        color={category.color}
-                      />
-                    )}
-                    <Link to={`/${article.slug}`}>
-                      <h2 className="font-display text-2xl lg:text-3xl text-black">
-                        {article.title}
-                      </h2>
-                    </Link>
-                    <p
-                      className="text-gray-500"
-                      // biome-ignore lint: needed to embed content from WordPress API
-                      dangerouslySetInnerHTML={{ __html: article.excerpt }}
-                    />
-                    <section className="flex gap-2 text-sm text-gray-400">
-                      <Bylines authors={article.authors} />
-                      <span>&middot;</span>
-                      <span>{article.pubDate}</span>
-                    </section>
-                  </section>
-                </li>
-              );
-            })}
+            {articleResults.articles.map((article) => (
+              <ArticleCard key={article.slug} article={article} />
+            ))}
           </ul>
 
           {articleResults.totalPages > 1 && (
