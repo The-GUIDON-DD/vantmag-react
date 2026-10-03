@@ -15,3 +15,21 @@ export interface ArticleData {
   excerpt: string;
   content: string;
 }
+
+export interface ArticleCardPost {
+  id: number;
+  date: string;
+  link: string;
+  slug: string;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  authors?: Pick<Author, "display_name">[];
+  _embedded?: {
+    "wp:featuredmedia"?: { source_url?: string; alt_text?: string }[];
+  };
+}
+
+export interface CategoryPostsPage {
+  posts: ArticleCardPost[];
+  hasMore: boolean;
+}
