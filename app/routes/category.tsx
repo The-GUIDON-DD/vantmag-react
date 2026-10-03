@@ -117,7 +117,7 @@ function CategoryContent({ category }: { category: CategoryData }) {
       {featuredPosts.length > 0 ? (
         <section
           aria-label="Featured articles"
-          className="mb-10 grid gap-8 md:mb-12 lg:grid-cols-[5fr_4fr]"
+          className="mb-10 grid gap-6 md:mb-12 lg:grid-cols-[5fr_4fr]"
         >
           <ArticleCard
             post={featuredPosts[0]}
@@ -125,7 +125,7 @@ function CategoryContent({ category }: { category: CategoryData }) {
             variant="featured"
             showCategory={false}
           />
-          <div className="grid gap-8 self-start">
+          <div className="grid gap-6">
             {featuredPosts.slice(1).map((post) => (
               <ArticleCard
                 key={post.id}

@@ -1,5 +1,10 @@
+import { Link } from "react-router";
 import type { ArticleCardPost } from "../types";
 import Chip from "./chip";
+
+// based on where current site grabs image if none is included
+const FALLBACK_IMAGE_URL =
+  "https://vantage.theguidon.com/wp-content/themes/vantmag-revamp-2022/assets/images/vantmag_16x9.png";
 
 type ArticleCardCategory = {
   name: string;
@@ -62,14 +67,12 @@ function PostImage({
     <div
       className={`relative w-full overflow-hidden rounded bg-slate-100 ${shape}`}
     >
-      {image?.source_url && (
-        <img
-          src={image.source_url}
-          alt={image.alt_text || ""}
-          loading={variant === "featured" ? "eager" : "lazy"}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
+      <img
+        src={image?.source_url || FALLBACK_IMAGE_URL}
+        alt={image?.source_url ? image.alt_text || "" : ""}
+        loading={variant === "featured" ? "eager" : "lazy"}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
     </div>
   );
 }
@@ -81,7 +84,6 @@ function Byline({
   post: ArticleCardPost;
   className?: string;
 }) {
-  // TODO: Use shared Bylines when /author/:slug is routed; it renders author links.
   const authors = post.authors?.map((author) => author.display_name).join(", ");
   return (
     <p
@@ -103,17 +105,12 @@ export default function ArticleCard({
 }: ArticleCardProps) {
   const featured = variant === "featured" || variant === "featured-row";
 
-  // TODO: Link to `/${post.slug}` when the in-app article page is ready.
-  const articleHref = post.link;
+  const articleHref = `/${post.slug}`;
 
-  const title = (
-    <a href={articleHref} className="hover:underline">
-      {plainText(post.title.rendered)}
-    </a>
-  );
+  const title = plainText(post.title.rendered);
   const excerpt = showExcerpt && (
     <p
-      className={`${variant === "featured" ? "mt-3" : "mt-2"} line-clamp-3 leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
+      className={`${variant === "featured" ? "mt-3" : "mt-2"} cursor-default line-clamp-3 leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
     >
       {plainText(post.excerpt.rendered)}
     </p>
@@ -130,11 +127,11 @@ export default function ArticleCard({
     if (variant === "featured") {
       featuredClasses = {
         article:
-          "category-article -m-3 flex flex-col gap-4 rounded-lg p-3 lg:row-span-2 lg:gap-5",
-        imageLink: "block overflow-hidden rounded",
-        content: "",
+          "category-article -m-3 flex flex-col gap-4 rounded-lg p-3 lg:gap-5",
+        imageLink: "block shrink-0 overflow-hidden rounded",
+        content: "flex flex-1 flex-col",
         heading: "text-lg font-bold leading-[1.15] lg:text-[32px]",
-        byline: "mt-2 lg:mt-7",
+        byline: "mt-auto pt-2 lg:pt-7",
       };
     } else {
       // Keep the image at the top if the row text is taller than the image.
@@ -151,12 +148,18 @@ export default function ArticleCard({
 
     return (
       <article className={featuredClasses.article}>
-        <a href={articleHref} className={featuredClasses.imageLink}>
+        <Link
+          to={articleHref}
+          aria-label={title}
+          className={featuredClasses.imageLink}
+        >
           <PostImage post={post} variant={variant} />
-        </a>
+        </Link>
         <div className={featuredClasses.content}>
           {chip}
-          <h2 className={featuredClasses.heading}>{title}</h2>
+          <h2 className={`cursor-default ${featuredClasses.heading}`}>
+            {title}
+          </h2>
           {excerpt}
           <Byline post={post} className={featuredClasses.byline} />
         </div>
@@ -189,12 +192,16 @@ export default function ArticleCard({
 
   return (
     <article className={standardClasses.article}>
-      <a href={articleHref} className={standardClasses.imageLink}>
+      <Link
+        to={articleHref}
+        aria-label={title}
+        className={standardClasses.imageLink}
+      >
         <PostImage post={post} variant={variant} />
-      </a>
+      </Link>
       <div className={standardClasses.content}>
         {chip}
-        <h3 className={standardClasses.heading}>{title}</h3>
+        <h3 className={`cursor-default ${standardClasses.heading}`}>{title}</h3>
         {excerpt}
         <Byline post={post} className={standardClasses.byline} />
       </div>
