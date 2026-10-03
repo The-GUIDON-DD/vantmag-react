@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
 import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
-import { Form, Link } from "react-router";
+import { Form, Link, useSearchParams } from "react-router";
 
 const links = [
   {
@@ -42,17 +42,26 @@ const links = [
   },
 ];
 
-function SearchBar({ width = "50vw" }: { width?: string | number }) {
+function SearchBar({
+  width = "50vw",
+  onSubmit,
+}: {
+  width?: string | number;
+  onSubmit?: () => void;
+}) {
+  const [searchParams] = useSearchParams();
+
   return (
     <section
       className="bg-white rounded-full px-5 py-4 flex items-center"
       style={{ width: width }}
     >
       <CgSearch className="text-vant-purple text-3xl mr-5" />
-      <Form action="/search" className="grow">
+      <Form action="/search" className="grow" onSubmit={onSubmit}>
         <input
           type="text"
           name="s"
+          defaultValue={searchParams.get("s") ?? ""}
           placeholder="Search an article, author, or category"
           className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-md lg:text-xl"
         />
@@ -61,13 +70,19 @@ function SearchBar({ width = "50vw" }: { width?: string | number }) {
   );
 }
 
-function Search({ hidden = true }: { hidden?: boolean }) {
+function Search({
+  hidden = true,
+  onSubmit,
+}: {
+  hidden?: boolean;
+  onSubmit?: () => void;
+}) {
   return (
     <section
       className="w-full flex justify-center items-center py-6 h-28 bg-[#dddffe] transition-transform duration-500 z-5 absolute bottom-0 left-0"
       style={{ transform: hidden ? "" : "translateY(100%)" }}
     >
-      <SearchBar />
+      <SearchBar onSubmit={onSubmit} />
     </section>
   );
 }
@@ -96,7 +111,7 @@ function Sidebar({ hideSidebar }: { hideSidebar: () => void }) {
           />
         </Link>
       </section>
-      <SearchBar width="100%" />
+      <SearchBar width="100%" onSubmit={hideSidebar} />
       <nav>
         <ul className="mt-8 list-none flex flex-col items-stretch gap-4 text-white uppercase font-bold text-lg">
           {links.map(({ title, path }) => (
@@ -156,7 +171,7 @@ export default function Header() {
               </button>
             </nav>
           </section>
-          <Search hidden={!showSearch} />
+          <Search hidden={!showSearch} onSubmit={() => setShowSearch(false)} />
           <button
             type="button"
             onClick={() => setShowSearch((prev) => !prev)}

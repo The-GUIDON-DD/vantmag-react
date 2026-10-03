@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { type ArticleData, BASE_URL } from "./types";
+import {
+  type ArticleCardData,
+  type ArticleData,
+  type ArticleSearchResults,
+  type Author,
+  BASE_URL,
+} from "./types";
 
 const ArticleSchema = z
   .object({
@@ -14,12 +20,33 @@ const ArticleSchema = z
   })
   .array();
 
+const SearchArticleSchema = ArticleSchema.element
+  .omit({ content: true })
+  .array();
+
+const AuthorSearchSchema = z
+  .object({
+    slug: z.string(),
+    name: z.string(),
+  })
+  .array();
+
 const MediaSchema = z.object({
   description: z.object({ rendered: z.string() }),
 });
 
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
+type SearchArticleResponse = z.infer<typeof SearchArticleSchema>;
+type AuthorSearchResponse = z.infer<typeof AuthorSearchSchema>;
+
+function formatDate(isoDate: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(isoDate));
+}
 
 export async function retrieveMediaFromID(id: number) {
   const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`).then(
@@ -40,21 +67,52 @@ export async function retrieveArticleFromSlug(
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
   const article = parsedData[0];
 
-  const date = new Date(article.date);
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
-
   return {
     title: article.title.rendered,
     slug: slug,
     authors: article.authors,
     featured_image: article.featured_media,
     category: article.categories[0],
-    pubDate: formattedDate,
+    pubDate: formatDate(article.date),
     excerpt: article.excerpt.rendered,
     content: article.content.rendered,
   };
+}
+
+export async function retrieveArticlesFromSearch(
+  term: string,
+  page = 1,
+): Promise<ArticleSearchResults> {
+  const response = await fetch(
+    `${BASE_URL}/posts?search=${encodeURIComponent(term)}&page=${page}&_fields=slug,date,title.rendered,excerpt.rendered,categories,authors,featured_media`,
+  );
+  const data = await response.json();
+  const parsedData: SearchArticleResponse = SearchArticleSchema.parse(data);
+
+  const articles: ArticleCardData[] = parsedData.map((article) => ({
+    title: article.title.rendered,
+    slug: article.slug,
+    authors: article.authors,
+    featured_image: article.featured_media,
+    category: article.categories[0],
+    pubDate: formatDate(article.date),
+    excerpt: article.excerpt.rendered,
+  }));
+
+  return {
+    articles,
+    totalPages: Number(response.headers.get("X-WP-TotalPages")) || 1,
+  };
+}
+
+export async function retrieveAuthorsFromSearch(
+  term: string,
+): Promise<Author[]> {
+  const data = await fetch(
+    `${BASE_URL}/ppma_author?search=${encodeURIComponent(term)}&_fields=slug,name`,
+  ).then((res) => res.json());
+
+  const parsedData: AuthorSearchResponse = AuthorSearchSchema.parse(data);
+
+  return parsedData.map(({ slug, name }) => ({ slug, display_name: name }));
 }
