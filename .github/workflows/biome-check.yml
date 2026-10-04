@@ -1,0 +1,30 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  biome-check:
+    name: Run Biome Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/setup@v1
+        with:
+          version: 11          # Specify your major or exact version
+          run-time: node@22    # Automatically installs Node.js
+          cache: true
+          run_install: false
+          
+      - name: Install Dependencies
+        run: pnpm ci
+
+      - name: Run Biome CI
+        run: npx @biomejs/biome ci . --reporter=github
