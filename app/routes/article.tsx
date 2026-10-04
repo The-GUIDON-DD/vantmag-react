@@ -64,7 +64,7 @@ export default function Article({ params }: Route.ComponentProps) {
             </section>
           </section>
           <section
-            className="bg-blue-300 min-h-100 lg:min-h-150 w-full lg:w-1/2 article-featured"
+            className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured"
             // biome-ignore lint: needed to embed content from WordPress API
             dangerouslySetInnerHTML={{ __html: media ?? "" }}
           />
