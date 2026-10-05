@@ -33,7 +33,7 @@ function CategoryContent({ category }: { category: CategoryData }) {
   });
 
   if (isPending) {
-    return <p className="p-8">Loading articles…</p>;
+    return <p className="p-8">Loading articles...</p>;
   }
 
   if (isError && !data) {
@@ -89,16 +89,16 @@ function CategoryContent({ category }: { category: CategoryData }) {
 
       {remainingPosts.length > 0 && (
         <section aria-labelledby="all-articles-heading">
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-5 flex items-center gap-3 lg:mb-6">
             <h2
               id="all-articles-heading"
-              className="shrink-0 font-display text-[28px] font-bold md:text-4xl lg:text-5xl"
+              className="shrink-0 font-display text-2xl font-bold md:text-4xl lg:text-5xl"
             >
               All Articles
             </h2>
             <div className="h-px flex-1 bg-neutral-900 lg:bg-neutral-400" />
           </div>
-          <div className="grid gap-8 lg:grid-cols-3 lg:gap-8">
+          <div className="grid gap-5 lg:grid-cols-3 lg:gap-8">
             {remainingPosts.map((post) => (
               <ArticleCard
                 key={post.id}

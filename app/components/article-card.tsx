@@ -85,15 +85,17 @@ function PostImage({
 function CardMetadata({
   post,
   className = "",
+  compact = false,
 }: {
   post: ArticleCardPost;
   className?: string;
+  compact?: boolean;
 }) {
   const authors = post.authors ?? [];
   const hasAuthors = authors.length > 0;
   return (
     <p
-      className={`text-sm uppercase leading-tight text-[#737373] ${className}`}
+      className={`${compact ? "text-xs lg:text-sm" : "text-sm"} uppercase leading-tight text-[#737373] ${className}`}
     >
       {hasAuthors && (
         <span className="font-bold lg:block [&_a]:relative [&_a]:z-2">
@@ -120,7 +122,7 @@ export default function ArticleCard({
   const title = plainText(post.title.rendered);
   const excerpt = showExcerpt && (
     <p
-      className={`${variant === "featured" ? "mt-3" : "mt-2"} line-clamp-3 leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
+      className={`${variant === "featured" ? "mt-3" : variant === "grid" ? "mt-1 lg:mt-2" : "mt-2"} ${variant === "grid" ? "line-clamp-2 lg:line-clamp-3" : "line-clamp-3"} leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
     >
       {plainText(post.excerpt.rendered)}
     </p>
@@ -188,13 +190,13 @@ export default function ArticleCard({
   } else {
     standardClasses = {
       article:
-        "category-article -m-3 grid min-w-0 grid-cols-[minmax(0,20%)_minmax(0,1fr)] gap-4 rounded-lg p-3 lg:flex lg:flex-col lg:gap-0",
+        "category-article -m-3 grid min-w-0 grid-cols-[100px_minmax(0,1fr)] gap-4 rounded-lg p-3 lg:flex lg:flex-col lg:gap-0",
       imageContainer: "block shrink-0 overflow-hidden rounded",
       content: "flex min-w-0 flex-col lg:flex-1",
       heading: chip
         ? "text-base font-bold leading-tight"
         : "text-base font-bold leading-tight lg:mt-4",
-      byline: "mt-4 lg:mt-auto lg:pt-6",
+      byline: "mt-auto pt-1 lg:pt-6",
     };
   }
 
@@ -211,7 +213,11 @@ export default function ArticleCard({
           </Link>
         </h3>
         {excerpt}
-        <CardMetadata post={post} className={standardClasses.byline} />
+        <CardMetadata
+          post={post}
+          className={standardClasses.byline}
+          compact={variant === "grid"}
+        />
       </div>
     </article>
   );
