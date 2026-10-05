@@ -1,5 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router";
+import { retrieveMediaFromID } from "../fetchers";
 import type { ArticleCardPost } from "../types";
+import { parseImage, plainText, postDate } from "../utils";
+import Bylines from "./bylines";
 import Chip from "./chip";
 
 // based on where current site grabs image if none is included
@@ -22,30 +27,11 @@ type ArticleCardProps = {
 
 type ArticleCardClasses = {
   article: string;
-  imageLink: string;
+  imageContainer: string;
   content: string;
   heading: string;
   byline: string;
 };
-
-function plainText(html: string) {
-  if (typeof DOMParser === "undefined") {
-    return html.replace(/<[^>]*>/g, "");
-  }
-
-  const document = new DOMParser().parseFromString(html, "text/html");
-  return document.body.textContent?.trim() ?? "";
-}
-
-function postDate(date: string) {
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
-}
 
 function PostImage({
   post,
@@ -54,7 +40,19 @@ function PostImage({
   post: ArticleCardPost;
   variant: NonNullable<ArticleCardProps["variant"]>;
 }) {
-  const image = post._embedded?.["wp:featuredmedia"]?.[0];
+  const hasMedia = post.featured_media > 0;
+  const { data: image, isPending } = useQuery({
+    queryKey: ["rendered", post.featured_media],
+    queryFn: () => retrieveMediaFromID(post.featured_media),
+    enabled: hasMedia,
+    select: parseImage,
+    retry: false,
+    retryOnMount: false,
+  });
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const displayedImage = image && image.src !== failedSource ? image : null;
+  const loading =
+    displayedImage?.loading ?? (variant === "featured" ? "eager" : "lazy");
   // Match the wide image's height to the adjacent featured-row image on desktop.
   const shape = {
     featured: "aspect-[16/5] lg:aspect-[875/312] xl:aspect-[25/8]",
@@ -67,30 +65,42 @@ function PostImage({
     <div
       className={`relative w-full overflow-hidden rounded bg-slate-100 ${shape}`}
     >
-      <img
-        src={image?.source_url || FALLBACK_IMAGE_URL}
-        alt={image?.source_url ? image.alt_text || "" : ""}
-        loading={variant === "featured" ? "eager" : "lazy"}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      {(!hasMedia || !isPending) && (
+        <img
+          src={displayedImage?.src || FALLBACK_IMAGE_URL}
+          srcSet={displayedImage?.srcSet}
+          sizes={displayedImage?.sizes}
+          alt={displayedImage?.alt || ""}
+          loading={loading}
+          onError={() => {
+            if (displayedImage) setFailedSource(displayedImage.src);
+          }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
     </div>
   );
 }
 
-function Byline({
+function CardMetadata({
   post,
   className = "",
 }: {
   post: ArticleCardPost;
   className?: string;
 }) {
-  const authors = post.authors?.map((author) => author.display_name).join(", ");
+  const authors = post.authors ?? [];
+  const hasAuthors = authors.length > 0;
   return (
     <p
       className={`text-sm uppercase leading-tight text-[#737373] ${className}`}
     >
-      {authors && <span className="font-bold lg:block">By {authors}</span>}
-      {authors && <span className="lg:hidden"> · </span>}
+      {hasAuthors && (
+        <span className="font-bold lg:block [&_a]:relative [&_a]:z-2">
+          By <Bylines authors={authors} />
+        </span>
+      )}
+      {hasAuthors && <span className="lg:hidden"> · </span>}
       <time dateTime={post.date}>{postDate(post.date)}</time>
     </p>
   );
@@ -110,7 +120,7 @@ export default function ArticleCard({
   const title = plainText(post.title.rendered);
   const excerpt = showExcerpt && (
     <p
-      className={`${variant === "featured" ? "mt-3" : "mt-2"} cursor-default line-clamp-3 leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
+      className={`${variant === "featured" ? "mt-3" : "mt-2"} line-clamp-3 leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
     >
       {plainText(post.excerpt.rendered)}
     </p>
@@ -128,7 +138,7 @@ export default function ArticleCard({
       featuredClasses = {
         article:
           "category-article -m-3 flex flex-col gap-4 rounded-lg p-3 lg:gap-5",
-        imageLink: "block shrink-0 overflow-hidden rounded",
+        imageContainer: "block shrink-0 overflow-hidden rounded",
         content: "flex flex-1 flex-col",
         heading: "text-lg font-bold leading-[1.15] lg:text-[32px]",
         byline: "mt-auto pt-2 lg:pt-7",
@@ -138,7 +148,7 @@ export default function ArticleCard({
       featuredClasses = {
         article:
           "category-article -m-3 flex flex-col gap-5 rounded-lg p-3 lg:flex-row lg:items-center lg:gap-6",
-        imageLink:
+        imageContainer:
           "block overflow-hidden rounded lg:w-[52%] lg:shrink-0 lg:self-start xl:w-[40%]",
         content: "min-w-0 flex-1",
         heading: "text-lg font-bold leading-tight",
@@ -148,20 +158,18 @@ export default function ArticleCard({
 
     return (
       <article className={featuredClasses.article}>
-        <Link
-          to={articleHref}
-          aria-label={title}
-          className={featuredClasses.imageLink}
-        >
+        <div className={featuredClasses.imageContainer}>
           <PostImage post={post} variant={variant} />
-        </Link>
+        </div>
         <div className={featuredClasses.content}>
           {chip}
-          <h2 className={`cursor-default ${featuredClasses.heading}`}>
-            {title}
+          <h2 className={featuredClasses.heading}>
+            <Link to={articleHref} className="category-article-link">
+              {title}
+            </Link>
           </h2>
           {excerpt}
-          <Byline post={post} className={featuredClasses.byline} />
+          <CardMetadata post={post} className={featuredClasses.byline} />
         </div>
       </article>
     );
@@ -172,7 +180,7 @@ export default function ArticleCard({
   if (variant === "row") {
     standardClasses = {
       article: "category-article -m-3 flex flex-wrap gap-4 rounded-lg p-3",
-      imageLink: "block min-w-0 flex-[1_1_120px] overflow-hidden rounded",
+      imageContainer: "block min-w-0 flex-[1_1_120px] overflow-hidden rounded",
       content: "flex min-w-0 flex-[2_1_200px] flex-col",
       heading: "text-base font-bold leading-tight",
       byline: "mt-auto pt-6",
@@ -181,7 +189,7 @@ export default function ArticleCard({
     standardClasses = {
       article:
         "category-article -m-3 grid min-w-0 grid-cols-[minmax(0,20%)_minmax(0,1fr)] gap-4 rounded-lg p-3 lg:flex lg:flex-col lg:gap-0",
-      imageLink: "block shrink-0 overflow-hidden rounded",
+      imageContainer: "block shrink-0 overflow-hidden rounded",
       content: "flex min-w-0 flex-col lg:flex-1",
       heading: chip
         ? "text-base font-bold leading-tight"
@@ -192,18 +200,18 @@ export default function ArticleCard({
 
   return (
     <article className={standardClasses.article}>
-      <Link
-        to={articleHref}
-        aria-label={title}
-        className={standardClasses.imageLink}
-      >
+      <div className={standardClasses.imageContainer}>
         <PostImage post={post} variant={variant} />
-      </Link>
+      </div>
       <div className={standardClasses.content}>
         {chip}
-        <h3 className={`cursor-default ${standardClasses.heading}`}>{title}</h3>
+        <h3 className={standardClasses.heading}>
+          <Link to={articleHref} className="category-article-link">
+            {title}
+          </Link>
+        </h3>
         {excerpt}
-        <Byline post={post} className={standardClasses.byline} />
+        <CardMetadata post={post} className={standardClasses.byline} />
       </div>
     </article>
   );

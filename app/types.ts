@@ -23,11 +23,15 @@ export interface ArticleCardPost {
   slug: string;
   title: { rendered: string };
   excerpt: { rendered: string };
-  authors?: Pick<Author, "display_name">[];
-  _embedded?: {
-    "wp:featuredmedia"?: { source_url?: string; alt_text?: string }[];
-  };
+  featured_media: number;
+  authors?: Author[];
 }
+
+export type CategoryDetails = {
+  name: string;
+  description: string;
+  descriptionColor: string;
+};
 
 export interface CategoryPostsPage {
   posts: ArticleCardPost[];

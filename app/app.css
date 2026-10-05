@@ -25,7 +25,26 @@ body {
 }
 
 .category-article {
+  position: relative;
+  isolation: isolate;
   transition: background-color 150ms ease;
+}
+
+.category-article-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0.5rem;
+}
+
+.category-article-link:focus-visible {
+  outline: none;
+}
+
+.category-article-link:focus-visible::after {
+  outline: 2px solid var(--color-vant-purple);
+  outline-offset: 2px;
 }
 
 /* Keep category navigation above the page content. */

@@ -26,17 +26,10 @@ const CategoryPostsSchema = z
     slug: z.string(),
     title: z.object({ rendered: z.string() }),
     excerpt: z.object({ rendered: z.string() }),
-    authors: z.object({ display_name: z.string() }).array().optional(),
-    _embedded: z
-      .object({
-        "wp:featuredmedia": z
-          .object({
-            source_url: z.string().optional(),
-            alt_text: z.string().optional(),
-          })
-          .array()
-          .optional(),
-      })
+    featured_media: z.number(),
+    authors: z
+      .object({ slug: z.string(), display_name: z.string() })
+      .array()
       .optional(),
   })
   .array();
@@ -55,10 +48,9 @@ export async function retrieveCategoryPosts(
   url.searchParams.set("order", "desc");
   url.searchParams.set("offset", String(offset));
   url.searchParams.set("per_page", String(pageSize + 1));
-  url.searchParams.set("_embed", "wp:featuredmedia");
   url.searchParams.set(
     "_fields",
-    "id,date,link,slug,title,excerpt,authors,_links,_embedded",
+    "id,date,link,slug,title,excerpt,authors,featured_media",
   );
 
   const response = await fetch(url);
