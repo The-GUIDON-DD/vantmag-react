@@ -20,5 +20,5 @@ export type ArticleCardData = Omit<ArticleData, "content">;
 
 export interface ArticleSearchResults {
   articles: ArticleCardData[];
-  totalPages: number;
+  hasMore: boolean;
 }

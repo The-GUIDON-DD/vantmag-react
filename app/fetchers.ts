@@ -95,36 +95,63 @@ export async function retrieveArticleFromSlug(
 
 export async function retrieveArticlesFromSearch(
   term: string,
-  page = 1,
+  offset: number,
+  pageSize: number,
 ): Promise<ArticleSearchResults> {
-  const response = await fetch(
-    `${BASE_URL}/posts?search=${encodeURIComponent(term)}&page=${page}&_fields=slug,date,title.rendered,excerpt.rendered,categories,authors,featured_media`,
-  );
-  const data = await response.json();
-  const parsedData: SearchArticleResponse = SearchArticleSchema.parse(data);
+  const fields = [
+    "slug",
+    "date",
+    "title.rendered",
+    "excerpt.rendered",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+  const searchUrl = new URL(`${BASE_URL}/posts`);
+  searchUrl.searchParams.set("search", term);
+  searchUrl.searchParams.set("offset", String(offset));
+  // Request one extra post to know if there are more results without
+  // risking an out-of-range page error from WordPress.
+  searchUrl.searchParams.set("per_page", String(pageSize + 1));
+  searchUrl.searchParams.set("_fields", fields.join(","));
 
-  const articles: ArticleCardData[] = parsedData.map((article) => ({
-    title: article.title.rendered,
-    slug: article.slug,
-    authors: article.authors,
-    featured_image: article.featured_media,
-    category: article.categories[0],
-    pubDate: formatDate(article.date),
-    excerpt: article.excerpt.rendered,
-  }));
+  const response = await fetch(searchUrl);
+  if (!response.ok) {
+    throw new Error(`Could not load search results (${response.status})`);
+  }
+  const parsedData: SearchArticleResponse = SearchArticleSchema.parse(
+    await response.json(),
+  );
+
+  const articles: ArticleCardData[] = parsedData
+    .slice(0, pageSize)
+    .map((article) => ({
+      title: article.title.rendered,
+      slug: article.slug,
+      authors: article.authors,
+      featured_image: article.featured_media,
+      category: article.categories[0],
+      pubDate: formatDate(article.date),
+      excerpt: article.excerpt.rendered,
+    }));
 
   return {
     articles,
-    totalPages: Number(response.headers.get("X-WP-TotalPages")) || 1,
+    hasMore: parsedData.length > pageSize,
   };
 }
 
 export async function retrieveAuthorsFromSearch(
   term: string,
 ): Promise<Author[]> {
-  const data = await fetch(
-    `${BASE_URL}/ppma_author?search=${encodeURIComponent(term)}&_fields=slug,name`,
-  ).then((res) => res.json());
+  const authorUrl = new URL(`${BASE_URL}/ppma_author`);
+  authorUrl.searchParams.set("search", term);
+  authorUrl.searchParams.set("_fields", "slug,name");
+  const response = await fetch(authorUrl);
+  if (!response.ok) {
+    throw new Error(`Could not load author results (${response.status})`);
+  }
+  const data = await response.json();
 
   const parsedData: AuthorSearchResponse = AuthorSearchSchema.parse(data);
 

@@ -61,6 +61,8 @@ function SearchBar({
         <input
           type="text"
           name="s"
+          // Remount when the URL changes so back/forward updates the input.
+          key={searchParams.get("s") ?? ""}
           defaultValue={searchParams.get("s") ?? ""}
           placeholder="Search an article, author, or category"
           className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-md lg:text-xl"

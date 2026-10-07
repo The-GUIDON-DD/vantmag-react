@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
@@ -9,6 +9,16 @@ import {
 } from "~/fetchers";
 import type { ArticleCardData } from "~/types";
 import { categories } from "../../constants";
+
+const PAGE_SIZE = 10;
+
+// Lets "expose" match "EXPOSÉ".
+function normalize(text: string) {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
 
 export function meta() {
   return [
@@ -66,18 +76,27 @@ function ArticleCard({ article }: { article: ArticleCardData }) {
 }
 
 export default function Search() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const term = searchParams.get("s")?.trim() ?? "";
-  const page = Number(searchParams.get("page") ?? "1") || 1;
   const hasQuery = term.length > 0;
 
   const {
     isPending: isArticlesPending,
     isError: isArticlesError,
     data: articleResults,
-  } = useQuery({
-    queryKey: ["search-articles", term, page],
-    queryFn: () => retrieveArticlesFromSearch(term, page),
+    isFetchNextPageError,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["search-articles", term],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      retrieveArticlesFromSearch(term, pageParam, PAGE_SIZE),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.hasMore
+        ? pages.reduce((count, page) => count + page.articles.length, 0)
+        : undefined,
     enabled: hasQuery,
   });
 
@@ -93,13 +112,9 @@ export default function Search() {
 
   const categoryResults = hasQuery
     ? categories.filter(({ title }) =>
-        title.toLowerCase().includes(term.toLowerCase()),
+        normalize(title).includes(normalize(term)),
       )
     : [];
-
-  const goToPage = (nextPage: number) => {
-    setSearchParams({ s: term, page: String(nextPage) });
-  };
 
   if (!hasQuery) {
     return (
@@ -111,12 +126,20 @@ export default function Search() {
     );
   }
 
+  // Offsets can shift if a post is published between loads, so drop repeats.
+  const articles = [
+    ...new Map(
+      articleResults?.pages
+        .flatMap((page) => page.articles)
+        .map((article) => [article.slug, article]),
+    ).values(),
+  ];
   const isPending = isArticlesPending || isAuthorsPending;
-  const isError = isArticlesError || isAuthorsError;
+  const isError = (isArticlesError && !articleResults) || isAuthorsError;
   const hasNoResults =
     !isPending &&
     !isError &&
-    (articleResults?.articles.length ?? 0) === 0 &&
+    articles.length === 0 &&
     (authorResults?.length ?? 0) === 0 &&
     categoryResults.length === 0;
 
@@ -173,31 +196,31 @@ export default function Search() {
         </section>
       )}
 
-      {!!articleResults?.articles.length && (
+      {articles.length > 0 && (
         <section className="flex flex-col gap-6">
           <p className="font-bold uppercase text-gray-400 text-lg">Articles</p>
           <ul className="list-none flex flex-col gap-8">
-            {articleResults.articles.map((article) => (
+            {articles.map((article) => (
               <ArticleCard key={article.slug} article={article} />
             ))}
           </ul>
 
-          {articleResults.totalPages > 1 && (
-            <nav className="flex gap-6 justify-center items-center text-vant-purple font-bold">
-              {page > 1 && (
-                <button type="button" onClick={() => goToPage(page - 1)}>
-                  Previous
-                </button>
-              )}
-              <span className="text-gray-400 font-normal">
-                Page {page} of {articleResults.totalPages}
-              </span>
-              {page < articleResults.totalPages && (
-                <button type="button" onClick={() => goToPage(page + 1)}>
-                  Next
-                </button>
-              )}
-            </nav>
+          {hasNextPage && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="rounded-full bg-[#dddffe] px-16 py-2.5 text-sm font-bold uppercase text-vant-purple hover:bg-[#cdd0ff] disabled:opacity-60"
+              >
+                {isFetchingNextPage ? "Loading…" : "Load more"}
+              </button>
+            </div>
+          )}
+          {isFetchNextPageError && (
+            <p role="alert" className="text-center text-red-700">
+              Could not load more articles. Please try again.
+            </p>
           )}
         </section>
       )}
