@@ -29,9 +29,9 @@ type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 
 export async function retrieveMediaFromID(id: number) {
-  const data = await fetch(`${BASE_URL}/media/${id}?_fields=description`).then(
-    (res) => res.json(),
-  );
+  const mediaUrl = new URL(`${BASE_URL}/media/${id}`);
+  mediaUrl.searchParams.set("_fields", "description");
+  const data = await fetch(mediaUrl).then((res) => res.json());
   const parsedData: MediaResponse = MediaSchema.parse(data);
 
   return parsedData.description.rendered;
@@ -40,9 +40,23 @@ export async function retrieveMediaFromID(id: number) {
 export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
-  const data = await fetch(
-    `${BASE_URL}/posts?slug=${slug}&_fields=slug,date,title.rendered,content.rendered,excerpt.rendered,categories,authors,featured_media`,
-  ).then((res) => res.json());
+  const fields = [
+    "slug",
+    "date",
+    "title.rendered",
+    "content.rendered",
+    "excerpt",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+  const articleUrl = new URL(`${BASE_URL}/posts`);
+  articleUrl.searchParams.set("slug", slug);
+  articleUrl.searchParams.set(
+    "_fields",
+    fields.map(encodeURIComponent).join(","),
+  );
+  const data = await fetch(articleUrl).then((res) => res.json());
 
   const parsedData: ArticleResponse = ArticleSchema.parse(data);
   const article = parsedData[0];
