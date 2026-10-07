@@ -54,3 +54,15 @@ export function formatDate(date: string) {
     day: "numeric",
   }).format(new Date(date));
 }
+
+/**
+ * Renders a byline the way the theme does: "A", "A and B", "A, B, and C".
+ * Plain text — `Bylines` is the linked equivalent used on the article page.
+ */
+export function formatAuthors(authors: { display_name: string }[]) {
+  const names = authors.map((a) => a.display_name);
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}

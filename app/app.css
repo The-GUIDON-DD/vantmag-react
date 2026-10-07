@@ -219,7 +219,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .hero .article > *:not(.thumbnail-container) {
@@ -248,14 +248,6 @@ body {
   align-items: center;
   column-gap: 24px;
   margin-top: 16px;
-}
-
-.hero .article .author-info .icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 64px;
-  object-fit: cover;
-  object-position: center;
 }
 
 .hero .article .author-info .author {
@@ -452,11 +444,6 @@ body {
     display: block;
   }
 
-  .hero .article .author-info .icon {
-    width: 48px;
-    height: 48px;
-  }
-
   .load-more {
     width: 100%;
     padding: 12px 40px;
@@ -520,5 +507,24 @@ body {
 
   .tab-selection button {
     font-size: 14px;
+  }
+}
+
+/* Section headings are Calluna, matching the theme's h3 scale. */
+.heading-container h3 {
+  font-family: "Calluna", serif;
+  font-size: 48px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* `.load-more` is an anchor to the category archive, not a pagination button. */
+.load-more {
+  text-decoration: none;
+}
+
+@media screen and (max-width: 576px) {
+  .heading-container h3 {
+    font-size: 24px;
   }
 }

@@ -63,7 +63,7 @@ export default function Home() {
         </section>
 
         <section className="mb-20">
-          <SectionHeading>You might like</SectionHeading>
+          <SectionHeading>Here is something for you.</SectionHeading>
           <div className="articles-grid">
             {data.suggestions.map((post) => (
               <ArticleCard key={post.slug} post={post} />
@@ -72,7 +72,7 @@ export default function Home() {
         </section>
 
         <section>
-          <SectionHeading>All content</SectionHeading>
+          <SectionHeading>Categories</SectionHeading>
           <CategoryTabs />
         </section>
       </div>

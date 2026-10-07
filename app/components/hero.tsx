@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { categories } from "../../constants";
 import type { PostCard } from "../types";
+import { formatAuthors } from "../utils";
 import Chip from "./chip";
 
 /**
@@ -9,7 +10,7 @@ import Chip from "./chip";
  */
 export default function Hero({ post }: { post: PostCard }) {
   const category = categories.find(({ id }) => id === post.category);
-  const [author] = post.authors;
+  const byline = formatAuthors(post.authors);
 
   return (
     <section className="hero mb-10">
@@ -21,7 +22,9 @@ export default function Hero({ post }: { post: PostCard }) {
             <div className="thumbnail bg-vant-purple" />
           )}
         </div>
-        <div className="info px-7 md:px-12 lg:px-14">
+        {/* Same container as the grids below, so the hero copy lines up with
+            the card columns instead of running to the viewport edge. */}
+        <div className="info w-full max-w-[1440px] mx-auto px-9 md:px-10 lg:px-13 xl:px-16">
           {category && (
             <div className="mb-2">
               <Chip
@@ -33,20 +36,9 @@ export default function Hero({ post }: { post: PostCard }) {
           )}
           <h2 className="title">{post.title}</h2>
           <div className="author-info">
-            {author?.avatar_url && (
-              <img
-                src={author.avatar_url}
-                alt={author.display_name}
-                className="icon"
-              />
-            )}
             <div>
-              {post.authors.length > 0 && (
-                <p className="author">
-                  {post.authors.map((a) => a.display_name).join(", ")}
-                </p>
-              )}
-              <p className="date">{post.pubDate}</p>
+              {byline && <p className="author">{byline}</p>}
+              <p className="date">Published on {post.pubDate}</p>
             </div>
           </div>
         </div>

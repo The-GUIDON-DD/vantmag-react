@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { categories } from "../../constants";
 import type { PostCard } from "../types";
+import { formatAuthors } from "../utils";
 import Chip from "./chip";
 
 /**
@@ -16,14 +17,17 @@ export default function ArticleCard({
   showExcerpt?: boolean;
 }) {
   const category = categories.find(({ id }) => id === post.category);
-  const bylines = post.authors.map((a) => a.display_name).join(", ");
+  const byline = formatAuthors(post.authors);
 
   return (
     <Link
       to={`/${post.slug}`}
       className="article"
       style={
-        { "--hover-color": category?.color ?? "#dddffe" } as React.CSSProperties
+        {
+          // The theme tints the hover background to 25% of the category colour.
+          "--hover-color": category ? `${category.color}40` : "transparent",
+        } as React.CSSProperties
       }
     >
       <div className="thumbnail-container">
@@ -50,10 +54,12 @@ export default function ArticleCard({
         )}
         <h3 className="title">{post.title}</h3>
         {showExcerpt && <p className="excerpt">{post.excerpt}</p>}
-        {bylines && <p className="authors">{bylines}</p>}
+        {byline && <p className="authors">By {byline}</p>}
         <p className="date">{post.pubDate}</p>
         <p className="authors-date">
-          {bylines ? `${bylines} · ${post.pubDate}` : post.pubDate}
+          {byline && <strong>By {byline}</strong>}
+          {byline && " • "}
+          {post.pubDate}
         </p>
       </div>
     </Link>

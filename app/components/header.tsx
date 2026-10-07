@@ -132,28 +132,35 @@ export default function Header() {
                 className="hidden lg:block min-w-80 lg:w-[20vw] mt-4 mb-4 lg:mt-0 lg:mb-6"
               />
             </Link>
-            <nav className="grid-cols-3 gap-15 hidden lg:flex">
-              <section className="col-start-2 justify-self-center">
-                <ul className="flex list-none text-white uppercase font-bold text-lg">
+            {/* Equal-growing fillers either side keep the link list centred on
+                the page, with the search icon centred in the right-hand gap —
+                the same arrangement the original theme uses. */}
+            <nav className="hidden lg:flex w-full min-h-12 px-4">
+              <div className="flex w-full max-w-[1440px] mx-auto items-center">
+                <div className="grow" />
+                <ul className="flex items-center list-none text-white uppercase font-bold text-lg whitespace-nowrap">
                   {links.map(({ title, path }, ix) => (
-                    <li key={title}>
-                      <Link to={path}>
-                        {title}
-                        {ix < links.length - 1 && (
-                          <span className="mx-4">&middot;</span>
-                        )}
-                      </Link>
+                    <li key={title} className="flex items-center">
+                      <Link to={path}>{title}</Link>
+                      {ix < links.length - 1 && (
+                        <span aria-hidden="true" className="mx-5">
+                          &bull;
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
-              </section>
-              <button
-                onClick={() => setShowSearch((prev) => !prev)}
-                type="button"
-                className="text-white text-2xl font-bold"
-              >
-                <CgSearch />
-              </button>
+                <div className="grow flex justify-center">
+                  <button
+                    onClick={() => setShowSearch((prev) => !prev)}
+                    type="button"
+                    aria-label="Search"
+                    className="text-white text-2xl font-bold"
+                  >
+                    <CgSearch />
+                  </button>
+                </div>
+              </div>
             </nav>
           </section>
           <Search hidden={!showSearch} />
