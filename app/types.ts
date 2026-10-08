@@ -15,3 +15,10 @@ export interface ArticleData {
   excerpt: string;
   content: string;
 }
+
+export type ArticleCardData = Omit<ArticleData, "content">;
+
+export interface ArticleSearchResults {
+  articles: ArticleCardData[];
+  hasMore: boolean;
+}
