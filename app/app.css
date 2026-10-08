@@ -24,6 +24,51 @@ body {
     url("/public/fonts/calluna/calluna.woff") format("woff");
 }
 
+.category-article {
+  position: relative;
+  isolation: isolate;
+  transition: background-color 150ms ease;
+}
+
+.category-article-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0.5rem;
+}
+
+.category-article-link:focus-visible {
+  outline: none;
+}
+
+.category-article-link:focus-visible::after {
+  outline: 2px solid var(--color-vant-purple);
+  outline-offset: 2px;
+}
+
+/* Keep category navigation above the page content. */
+body:has(.category-page) header.sticky,
+body:has(.category-page) aside.fixed {
+  z-index: 50;
+}
+
+.category-article:hover,
+.category-article:focus-within {
+  background-color: var(--category-article-highlight);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-article img {
+    transition: transform 200ms ease;
+  }
+
+  .category-article:hover img,
+  .category-article:focus-within img {
+    transform: scale(1.04);
+  }
+}
+
 .article-featured * {
   width: 100%;
   height: 100%;

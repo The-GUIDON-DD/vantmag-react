@@ -15,3 +15,25 @@ export interface ArticleData {
   excerpt: string;
   content: string;
 }
+
+export interface ArticleCardPost {
+  id: number;
+  date: string;
+  link: string;
+  slug: string;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  featured_media: number;
+  authors?: Author[];
+}
+
+export type CategoryDetails = {
+  name: string;
+  description: string;
+  descriptionColor: string;
+};
+
+export interface CategoryPostsPage {
+  posts: ArticleCardPost[];
+  hasMore: boolean;
+}
