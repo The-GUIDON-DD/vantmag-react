@@ -118,7 +118,7 @@ export default function Header() {
     <>
       {showSidebar && <Sidebar hideSidebar={() => setShowSideBar(false)} />}
       {!showSidebar && (
-        <header className="sticky inset-0 w-screen flex flex-col items-stretch justify-center">
+        <header className="sticky inset-0 w-screen flex flex-col items-stretch justify-center z-100">
           <section className="py-4 w-full flex flex-col justify-center items-center bg-vant-purple z-10">
             <Link to="/">
               <img
