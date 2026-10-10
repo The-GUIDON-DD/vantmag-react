@@ -6,15 +6,18 @@ export interface Author {
 }
 
 export interface ArticleData {
+  id: number;
   title: string;
   slug: string;
-  authors: Author[];
+  authors?: Author[];
   featured_image: number;
   category: number;
   pubDate: string;
   excerpt: string;
   content: string;
 }
+
+export type ArticleCardData = Omit<ArticleData, "content">;
 
 export interface ArticleCardPost {
   id: number;
