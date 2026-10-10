@@ -31,7 +31,11 @@ export interface ArticleCardPost {
 }
 
 export type CategoryDetails = {
-  name: string;
+  id: number;
+  title: string;
+  path: string;
+  icon: string;
+  color: string;
   description: string;
   descriptionColor: string;
 };
