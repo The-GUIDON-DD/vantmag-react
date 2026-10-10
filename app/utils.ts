@@ -47,3 +47,12 @@ export function getSocMedUrlsFromArticle(article: ArticleData) {
     x: `http://x.com/share?url=https://vantage.theguidon.com/${article.slug}&text=${encodeURIComponent(article.title)}`,
   };
 }
+
+export function formatDate(date: Date) {
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+  return formattedDate;
+}

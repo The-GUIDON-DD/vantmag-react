@@ -6,34 +6,41 @@ export interface Author {
 }
 
 export interface ArticleData {
+  id: number;
   title: string;
   slug: string;
-  authors: Author[];
-  featured_image: number;
+  authors?: Author[];
+  featured_media: number;
   category: number;
   pubDate: string;
   excerpt: string;
   content: string;
 }
 
-export interface ArticleCardPost {
-  id: number;
-  date: string;
-  link: string;
-  slug: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
-  featured_media: number;
-  authors?: Author[];
-}
+export type ArticleCardData = Omit<ArticleData, "content" | "category">;
+
+// export interface ArticleCardPost {
+//   id: number;
+//   date: string;
+//   link: string;
+//   slug: string;
+//   title: { rendered: string };
+//   excerpt: { rendered: string };
+//   featured_media: number;
+//   authors?: Author[];
+// }
 
 export type CategoryDetails = {
-  name: string;
+  id: number;
+  title: string;
+  path: string;
+  icon: string;
+  color: string;
   description: string;
   descriptionColor: string;
 };
 
 export interface CategoryPostsPage {
-  posts: ArticleCardPost[];
+  posts: ArticleCardData[];
   hasMore: boolean;
 }

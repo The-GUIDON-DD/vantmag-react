@@ -26,7 +26,7 @@ export default function Article({ params }: Route.ComponentProps) {
     queryFn: () => retrieveArticleFromSlug(slug),
   });
 
-  const mediaID = data?.featured_image;
+  const mediaID = data?.featured_media;
   const {
     isPending: isMediaPending,
     isError: isMediaError,
@@ -43,7 +43,9 @@ export default function Article({ params }: Route.ComponentProps) {
   } else if (isError) {
     return <div>Error: {JSON.stringify(error)}</div>;
   } else {
-    const category = categories.find(({ id }) => data.category === id);
+    const category = Object.values(categories).find(
+      ({ id }) => data.category === id,
+    );
     const { facebook: fbUrl, x: xUrl } = getSocMedUrlsFromArticle(data);
     return (
       <main className="w-full min-h-screen bg-white">
