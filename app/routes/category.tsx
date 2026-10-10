@@ -9,6 +9,7 @@ import type { Route } from "./+types/category";
 function CategoryContent({ category }: { category: CategoryDetails }) {
   const {
     data,
+    error,
     isPending,
     isError,
     isFetchNextPageError,
@@ -42,7 +43,7 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
         role="alert"
         className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
       >
-        Could not load articles. Please try again.
+        Could not load articles. Please try again. {error.message}
       </p>
     );
   }

@@ -97,7 +97,7 @@ function CardMetadata({
         </span>
       )}
       {hasAuthors && <span className="lg:hidden"> · </span>}
-      <time dateTime={post.pubDate}>{postDate(post.pubDate)}</time>
+      <time dateTime={post.pubDate}>{post.pubDate}</time>
     </p>
   );
 }

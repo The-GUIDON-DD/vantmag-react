@@ -21,7 +21,10 @@ const MediaSchema = z.object({
   description: z.object({ rendered: z.string() }),
 });
 
-const CategoryPostSchema = ArticleSchema.omit({ content: true });
+const CategoryPostSchema = ArticleSchema.omit({
+  content: true,
+  categories: true,
+});
 
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
@@ -50,7 +53,6 @@ function categoryPostResponseToArticleCardPost(
     slug: categoryPostRes.slug,
     authors: categoryPostRes.authors,
     featured_media: categoryPostRes.featured_media,
-    category: categoryPostRes.categories[0],
     pubDate: formatDate(new Date(categoryPostRes.date)),
     excerpt: categoryPostRes.excerpt.rendered,
   };
@@ -100,6 +102,7 @@ export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
   const fields = [
+    "id",
     "slug",
     "date",
     "title.rendered",

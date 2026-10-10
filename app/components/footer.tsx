@@ -71,7 +71,7 @@ export default function Footer() {
       <section className="mt-8 md:order-last">
         <p className="font-bold uppercase">Categories</p>
         <section className="w-full flex flex-wrap gap-4 mt-4">
-          {categories.map(({ title, path, icon, color }) => (
+          {Object.values(categories).map(({ title, path, icon, color }) => (
             <Link to={path} key={title}>
               <Chip title={title} icon={icon} color={color} />
             </Link>

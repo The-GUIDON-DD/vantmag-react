@@ -17,7 +17,7 @@ export interface ArticleData {
   content: string;
 }
 
-export type ArticleCardData = Omit<ArticleData, "content">;
+export type ArticleCardData = Omit<ArticleData, "content" | "category">;
 
 // export interface ArticleCardPost {
 //   id: number;
