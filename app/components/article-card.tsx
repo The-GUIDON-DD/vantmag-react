@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
 import { retrieveMediaFromID } from "../fetchers";
-import type { ArticleCardPost } from "../types";
+import type { ArticleCardData, CategoryDetails } from "../types";
 import { parseImage, plainText, postDate } from "../utils";
 import Bylines from "./bylines";
 import Chip from "./chip";
@@ -11,15 +11,9 @@ import Chip from "./chip";
 const FALLBACK_IMAGE_URL =
   "https://vantage.theguidon.com/wp-content/themes/vantmag-revamp-2022/assets/images/vantmag_16x9.png";
 
-type ArticleCardCategory = {
-  name: string;
-  icon: string;
-  color: string;
-};
-
 type ArticleCardProps = {
-  post: ArticleCardPost;
-  category?: ArticleCardCategory;
+  post: ArticleCardData;
+  category?: CategoryDetails;
   variant?: "featured" | "featured-row" | "grid" | "row";
   showExcerpt?: boolean;
   showCategory?: boolean;
@@ -37,7 +31,7 @@ function PostImage({
   post,
   variant,
 }: {
-  post: ArticleCardPost;
+  post: ArticleCardData;
   variant: NonNullable<ArticleCardProps["variant"]>;
 }) {
   const hasMedia = post.featured_media > 0;
@@ -87,7 +81,7 @@ function CardMetadata({
   className = "",
   compact = false,
 }: {
-  post: ArticleCardPost;
+  post: ArticleCardData;
   className?: string;
   compact?: boolean;
 }) {
@@ -103,7 +97,7 @@ function CardMetadata({
         </span>
       )}
       {hasAuthors && <span className="lg:hidden"> · </span>}
-      <time dateTime={post.date}>{postDate(post.date)}</time>
+      <time dateTime={post.pubDate}>{postDate(post.pubDate)}</time>
     </p>
   );
 }
@@ -119,17 +113,21 @@ export default function ArticleCard({
 
   const articleHref = `/${post.slug}`;
 
-  const title = plainText(post.title.rendered);
+  const title = plainText(post.title);
   const excerpt = showExcerpt && (
     <p
       className={`${variant === "featured" ? "mt-3" : variant === "grid" ? "mt-1 lg:mt-2" : "mt-2"} ${variant === "grid" ? "line-clamp-2 lg:line-clamp-3" : "line-clamp-3"} leading-[1.2] ${featured ? "text-base lg:text-sm" : "text-sm"}`}
     >
-      {plainText(post.excerpt.rendered)}
+      {plainText(post.excerpt)}
     </p>
   );
   const chip = showCategory && category && (
     <div className={`mb-3 ${variant === "grid" ? "lg:mt-4" : ""}`}>
-      <Chip title={category.name} icon={category.icon} color={category.color} />
+      <Chip
+        title={category.title}
+        icon={category.icon}
+        color={category.color}
+      />
     </div>
   );
 

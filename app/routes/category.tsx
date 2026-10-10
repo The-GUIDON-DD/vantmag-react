@@ -1,12 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
-import type { CategoryData } from "../../constants";
-import { categories, categoryDetails, page_size_values } from "../../constants";
+import type { CategoryDetails } from "~/types";
+import { categories, page_size_values } from "../../constants";
 import ArticleCard from "../components/article-card";
 import { retrieveCategoryPosts } from "../fetchers";
 import type { Route } from "./+types/category";
 
-function CategoryContent({ category }: { category: CategoryData }) {
+function CategoryContent({ category }: { category: CategoryDetails }) {
   const {
     data,
     isPending,
@@ -134,16 +134,11 @@ function CategoryContent({ category }: { category: CategoryData }) {
 
 export default function Category({ params }: Route.ComponentProps) {
   const slug = params.slug ?? "";
-  const sharedCategory = categories.find(
-    ({ path }) => path === `/category/${slug}`,
-  );
-  const details = categoryDetails[slug];
+  const category = categories[slug];
 
-  if (!sharedCategory || !details) {
+  if (!(slug in categories) || !category) {
     throw new Response("Category not found", { status: 404 });
   }
-
-  const category = { ...sharedCategory, ...details };
 
   return (
     <div className="category-page min-h-screen bg-white font-sans text-black">
@@ -161,7 +156,7 @@ export default function Category({ params }: Route.ComponentProps) {
             className="h-8 w-8 shrink-0 object-contain lg:h-12 lg:w-12 xl:h-[72px] xl:w-[72px]"
           />
           <h1 className="text-left font-display text-[32px] leading-[1.05] lg:text-5xl xl:text-[72px]">
-            {category.name}
+            {category.title}
           </h1>
         </div>
         <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-11 lg:pr-20 lg:pl-16 lg:leading-tight xl:py-[50px] xl:pr-[120px] xl:pl-20">

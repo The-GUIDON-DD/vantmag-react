@@ -10,7 +10,7 @@ export interface ArticleData {
   title: string;
   slug: string;
   authors?: Author[];
-  featured_image: number;
+  featured_media: number;
   category: number;
   pubDate: string;
   excerpt: string;
@@ -19,16 +19,16 @@ export interface ArticleData {
 
 export type ArticleCardData = Omit<ArticleData, "content">;
 
-export interface ArticleCardPost {
-  id: number;
-  date: string;
-  link: string;
-  slug: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
-  featured_media: number;
-  authors?: Author[];
-}
+// export interface ArticleCardPost {
+//   id: number;
+//   date: string;
+//   link: string;
+//   slug: string;
+//   title: { rendered: string };
+//   excerpt: { rendered: string };
+//   featured_media: number;
+//   authors?: Author[];
+// }
 
 export type CategoryDetails = {
   id: number;
