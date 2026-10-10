@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { type ArticleData, BASE_URL, type CategoryPostsPage } from "./types";
+import { formatDate } from "./utils";
 
 const ArticleSchema = z.object({
   id: z.number(),
@@ -20,35 +21,13 @@ const MediaSchema = z.object({
   description: z.object({ rendered: z.string() }),
 });
 
-const CategoryPostsSchema = ArticleSchema.omit("content");
-
-// const CategoryPostsSchema = z
-//   .object({
-//     id: z.number(),
-//     date: z.iso.datetime({ local: true }),
-//     link: z.string(),
-//     slug: z.string(),
-//     title: z.object({ rendered: z.string() }),
-//     excerpt: z.object({ rendered: z.string() }),
-//     featured_media: z.number(),
-//     authors: z
-//       .object({ slug: z.string(), display_name: z.string() })
-//       .array()
-//       .optional(),
-//   })
-//   .array();
+const CategoryPostSchema = ArticleSchema.omit({ content: true });
 
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
+type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
-  const date = new Date(articleRes.date);
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
-
   return {
     id: articleRes.id,
     title: articleRes.title.rendered,
@@ -56,9 +35,24 @@ function articleResponseToArticleData(articleRes: ArticleResponse) {
     authors: articleRes.authors,
     featured_image: articleRes.featured_media,
     category: articleRes.categories[0],
-    pubDate: formattedDate,
+    pubDate: formatDate(new Date(articleRes.date)),
     excerpt: articleRes.excerpt.rendered,
     content: articleRes.content.rendered,
+  };
+}
+
+function categoryPostResponseToArticleCardPost(
+  categoryPostRes: CategoryPostResponse,
+) {
+  return {
+    id: categoryPostRes.id,
+    title: categoryPostRes.title.rendered,
+    slug: categoryPostRes.slug,
+    authors: categoryPostRes.authors,
+    featured_image: categoryPostRes.featured_media,
+    category: categoryPostRes.categories[0],
+    pubDate: formatDate(new Date(categoryPostRes.date)),
+    excerpt: categoryPostRes.excerpt.rendered,
   };
 }
 
@@ -83,7 +77,10 @@ export async function retrieveCategoryPosts(
     throw new Error(`Could not load articles (${response.status})`);
   }
 
-  const posts = CategoryPostsSchema.parse(await response.json());
+  const postResponses: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(await response.json());
+  const posts = postResponses.map(categoryPostResponseToArticleCardPost);
+
   return {
     posts: posts.slice(0, pageSize),
     hasMore: posts.length > pageSize,

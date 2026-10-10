@@ -37,6 +37,6 @@ export type CategoryDetails = {
 };
 
 export interface CategoryPostsPage {
-  posts: ArticleCardPost[];
+  posts: ArticleCardData[];
   hasMore: boolean;
 }
