@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { FaFacebook, FaXTwitter } from "react-icons/fa6";
-import { Link } from "react-router";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
+import { Skeleton } from "~/components/ui/skeleton";
 import { retrieveArticleFromSlug, retrieveMediaFromID } from "~/fetchers";
-import { getSocMedUrlsFromArticle } from "~/utils";
+import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
 
@@ -38,8 +38,30 @@ export default function Article({ params }: Route.ComponentProps) {
     enabled: !!mediaID,
   });
 
+  const mediaAttrs = media
+    ? parseImage(media)
+    : { src: "/default_image.webp", alt: "Vantage Magazine" };
+
   if (isPending) {
-    return <div>Pending...</div>;
+    return (
+      <div className="w-full bg-white px-6 lg:px-[15%] py-20 flex flex-col gap-8">
+        <div className="flex w-full flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-3/4" />
+        </div>
+        <div className="flex w-full flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-3/4" />
+        </div>
+        <div className="flex w-full flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-3/4" />
+        </div>
+      </div>
+    );
   } else if (isError) {
     return <div>Error: {JSON.stringify(error)}</div>;
   } else {
@@ -79,8 +101,13 @@ export default function Article({ params }: Route.ComponentProps) {
           <section
             className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured"
             // biome-ignore lint: needed to embed content from WordPress API
-            dangerouslySetInnerHTML={{ __html: media ?? "" }}
-          />
+          >
+            <img
+              alt="Vantage Magazine"
+              className="w-full object-cover min-h-full min-w-full"
+              {...mediaAttrs}
+            />
+          </section>
         </section>
         <section className="bg-vant-purple px-6 lg:px-[5%] py-8 text-white flex flex-col gap-2 text-md lg:text-xl">
           <p>Written by</p>
