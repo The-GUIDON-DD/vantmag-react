@@ -145,7 +145,7 @@ export async function retrieveRelatedArticles(
     "featured_media",
   ];
   const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set("category", String(article.category));
+  url.searchParams.set("categories", String(article.category));
   url.searchParams.set("exclude", String(article.id));
   url.searchParams.set("per_page", String(3));
   url.searchParams.set("fields", fields.join(","));
