@@ -2,10 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { FaFacebook, FaXTwitter } from "react-icons/fa6";
+import ArticleCard from "~/components/article-card";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
 import { Skeleton } from "~/components/ui/skeleton";
-import { retrieveArticleFromSlug, retrieveMediaFromID } from "~/fetchers";
+import {
+  retrieveArticleFromSlug,
+  retrieveMediaFromID,
+  retrieveRelatedArticles,
+} from "~/fetchers";
 import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
@@ -27,12 +32,7 @@ export default function Article({ params }: Route.ComponentProps) {
   });
 
   const mediaID = data?.featured_media;
-  const {
-    isPending: isMediaPending,
-    isError: isMediaError,
-    data: media,
-    error: mediaError,
-  } = useQuery({
+  const { data: media } = useQuery({
     queryKey: ["rendered", mediaID],
     queryFn: () => retrieveMediaFromID(mediaID!),
     enabled: !!mediaID,
@@ -41,6 +41,17 @@ export default function Article({ params }: Route.ComponentProps) {
   const mediaAttrs = media
     ? parseImage(media)
     : { src: "/default_image.webp", alt: "Vantage Magazine" };
+
+  const articleID = data?.id;
+  const {
+    isPending: isRelatedPending,
+    isError: isRelatedError,
+    data: relatedArticles,
+  } = useQuery({
+    queryKey: ["slug", articleID],
+    queryFn: () => retrieveRelatedArticles(data!),
+    enabled: !!data,
+  });
 
   if (isPending) {
     return (
@@ -117,6 +128,24 @@ export default function Article({ params }: Route.ComponentProps) {
           <p>{data.pubDate}</p>
         </section>
         <SanitizedContent html={data.content} />
+        <section className="w-full mb-4 px-6 lg:px-[20%] flex items-center gap-3">
+          <h1 className="font-display font-bold text-black text-3xl whitespace-nowrap">
+            You might like these!
+          </h1>
+          <div className="h-0 grow w-full border-black border-t" />
+        </section>
+        <section className="w-full min-h-fit mb-15 px-6 lg:px-[20%] grid grid-cols-3 gap-4">
+          {relatedArticles &&
+            relatedArticles.map((article) => (
+              <ArticleCard
+                key={article.id}
+                post={article}
+                category={categories[0]}
+                variant="grid"
+                showCategory={false}
+              />
+            ))}
+        </section>
       </main>
     );
   }
