@@ -27,13 +27,13 @@ function SanitizedContent({ html }: { html: string }) {
 export default function Article({ params }: Route.ComponentProps) {
   const { slug } = params;
   const { isPending, isError, data, error } = useQuery({
-    queryKey: ["slug"],
+    queryKey: [slug],
     queryFn: () => retrieveArticleFromSlug(slug),
   });
 
   const mediaID = data?.featured_media;
   const { data: media } = useQuery({
-    queryKey: ["rendered", mediaID],
+    queryKey: [mediaID],
     queryFn: () => retrieveMediaFromID(mediaID!),
     enabled: !!mediaID,
   });
@@ -48,7 +48,7 @@ export default function Article({ params }: Route.ComponentProps) {
     isError: isRelatedError,
     data: relatedArticles,
   } = useQuery({
-    queryKey: ["slug", articleID],
+    queryKey: [articleID],
     queryFn: () => retrieveRelatedArticles(data!),
     enabled: !!data,
   });
@@ -115,6 +115,7 @@ export default function Article({ params }: Route.ComponentProps) {
           >
             <img
               alt="Vantage Magazine"
+              src="/default_image.webp"
               className="w-full object-cover min-h-full min-w-full"
               {...mediaAttrs}
             />
