@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { type ArticleData, BASE_URL, type CategoryPostsPage } from "./types";
-import { formatDate } from "./utils";
+import { formatDate, plainText } from "./utils";
 
 const ArticleSchema = z.object({
   id: z.number(),
@@ -31,9 +31,10 @@ type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
+  const cleanTitle = plainText(articleRes.title.rendered);
   return {
     id: articleRes.id,
-    title: articleRes.title.rendered,
+    title: cleanTitle,
     slug: articleRes.slug,
     authors: articleRes.authors,
     featured_media: articleRes.featured_media,

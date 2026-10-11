@@ -85,7 +85,7 @@ export default function Article({ params }: Route.ComponentProps) {
         <section className="bg-vant-purple px-6 lg:px-[5%] py-8 text-white flex flex-col gap-2 text-md lg:text-xl">
           <p>Written by</p>
           <p className="font-display text-3xl lg:text-4xl article-bylines">
-            <Bylines authors={data.authors} />
+            <Bylines authors={data.authors || []} />
           </p>
           <p>{data.pubDate}</p>
         </section>
