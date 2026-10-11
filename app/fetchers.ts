@@ -1,6 +1,11 @@
 import { z } from "zod";
-import { type ArticleData, BASE_URL, type CategoryPostsPage } from "./types";
-import { formatDate } from "./utils";
+import {
+  type ArticleCardData,
+  type ArticleData,
+  BASE_URL,
+  type CategoryPostsPage,
+} from "./types";
+import { formatDate, plainText } from "./utils";
 
 const ArticleSchema = z.object({
   id: z.number(),
@@ -31,9 +36,10 @@ type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
+  const cleanTitle = plainText(articleRes.title.rendered);
   return {
     id: articleRes.id,
-    title: articleRes.title.rendered,
+    title: cleanTitle,
     slug: articleRes.slug,
     authors: articleRes.authors,
     featured_media: articleRes.featured_media,
@@ -124,4 +130,29 @@ export async function retrieveArticleFromSlug(
   const articleRes = parsedData[0];
 
   return articleResponseToArticleData(articleRes);
+}
+
+export async function retrieveRelatedArticles(
+  article: ArticleData,
+): Promise<Array<ArticleCardData>> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("categories", String(article.category));
+  url.searchParams.set("exclude", String(article.id));
+  url.searchParams.set("per_page", String(3));
+  url.searchParams.set("fields", fields.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  return parsedData.map(categoryPostResponseToArticleCardPost);
 }
