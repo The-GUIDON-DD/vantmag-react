@@ -166,17 +166,22 @@ export async function retrieveRelatedArticles(
 }
 
 export async function retrieveAuthorFromSlug(slug: string): Promise<Author> {
-  const fields = ["id", "name"];
+  const fields = ["id", "name", "slug"];
   const url = new URL(`${BASE_URL}/ppma_author`);
   url.searchParams.set("slug", slug);
   url.searchParams.set("_fields", fields.join(","));
 
   const data = await fetch(url).then((res) => res.json());
-  const parsedData: AuthorResponse = AuthorSchema.parse(data);
+  const parsedData: AuthorResponse[] = AuthorSchema.array().parse(data);
+  if (parsedData.length < 1) {
+    throw new Error("Author not found.");
+  }
+  const author = parsedData[0];
+
   return {
-    id: parsedData.id,
-    display_name: parsedData.name,
-    slug: parsedData.slug,
+    id: author.id,
+    display_name: author.name,
+    slug: author.slug,
   };
 }
 
