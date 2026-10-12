@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   type ArticleCardData,
   type ArticleData,
+  type Author,
   BASE_URL,
   type CategoryPostsPage,
 } from "./types";
@@ -31,9 +32,16 @@ const CategoryPostSchema = ArticleSchema.omit({
   categories: true,
 });
 
+const AuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
+type AuthorResponse = z.infer<typeof AuthorSchema>;
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
   const cleanTitle = plainText(articleRes.title.rendered);
@@ -157,8 +165,23 @@ export async function retrieveRelatedArticles(
   return parsedData.map(categoryPostResponseToArticleCardPost);
 }
 
+export async function retrieveAuthorFromSlug(slug: string): Promise<Author> {
+  const fields = ["id", "name"];
+  const url = new URL(`${BASE_URL}/ppma_author`);
+  url.searchParams.set("slug", slug);
+  url.searchParams.set("_fields", fields.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: AuthorResponse = AuthorSchema.parse(data);
+  return {
+    id: parsedData.id,
+    display_name: parsedData.name,
+    slug: parsedData.slug,
+  };
+}
+
 export async function retrieveArticlesFromAuthor(
-  slug: string,
+  author_id: number,
 ): Promise<Array<ArticleCardData>> {
   const fields = [
     "id",
@@ -172,9 +195,10 @@ export async function retrieveArticlesFromAuthor(
     "featured_media",
   ];
 
-  const url = new URL(
-    `https://vantage.theguidon.com/custom/v1/posts-by-author/${slug}`,
-  );
+  const url = new URL(`${BASE_URL}/posts`);
+  // NOTE: This is because we use the PublishPress Authors Plugin.
+  // If the API changes or we use a different plugin, THIS FUNCTION MUST BE CHANGED
+  url.searchParams.set("ppma_author", String(author_id));
   url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
 
   const data = await fetch(url).then((res) => res.json());

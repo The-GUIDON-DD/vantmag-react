@@ -1,6 +1,7 @@
 export const BASE_URL = "https://vantage.theguidon.com/wp-json/wp/v2";
 
 export interface Author {
+  id?: number;
   slug: string;
   display_name: string;
 }
