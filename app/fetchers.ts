@@ -156,3 +156,31 @@ export async function retrieveRelatedArticles(
 
   return parsedData.map(categoryPostResponseToArticleCardPost);
 }
+
+export async function retrieveArticlesFromAuthor(
+  slug: string,
+): Promise<Array<ArticleCardData>> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "content.rendered",
+    "excerpt",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+
+  const url = new URL(
+    `https://vantage.theguidon.com/custom/v1/posts-by-author/${slug}`,
+  );
+  url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  return parsedData.map(categoryPostResponseToArticleCardPost);
+}
