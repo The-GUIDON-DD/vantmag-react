@@ -111,13 +111,18 @@ export async function retrieveCategoryPosts(
     throw new Error(`Could not load articles (${response.status})`);
   }
 
+  const totalPages = parseInt(
+    response.headers.get("X-WP-TotalPages") || "0",
+    10,
+  );
+
   const postResponses: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(await response.json());
   const posts = postResponses.map(categoryPostResponseToArticleCardPost);
 
   return {
     posts: posts.slice(0, pageSize),
-    hasMore: posts.length > pageSize,
+    hasMore: offset < totalPages - 1,
   };
 }
 
@@ -150,6 +155,7 @@ export async function retrieveArticleFromSlug(
     "_fields",
     fields.map(encodeURIComponent).join(","),
   );
+
   const data = await fetch(articleUrl).then((res) => res.json());
 
   const parsedData: ArticleResponse[] = ArticleSchema.array().parse(data);
@@ -205,7 +211,9 @@ export async function retrieveAuthorFromSlug(slug: string): Promise<Author> {
 
 export async function retrieveArticlesFromAuthor(
   author_id: number,
-): Promise<Array<ArticleCardData>> {
+  offset: number,
+  pageSize: number,
+): Promise<{ posts: Array<ArticleCardData>; hasMore: boolean }> {
   const fields = [
     "id",
     "slug",
@@ -222,12 +230,24 @@ export async function retrieveArticlesFromAuthor(
   // NOTE: This is because we use the PublishPress Authors Plugin.
   // If the API changes or we use a different plugin, THIS FUNCTION MUST BE CHANGED
   url.searchParams.set("ppma_author", String(author_id));
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("offset", String(offset));
+  url.searchParams.set("per_page", String(pageSize + 1));
   url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
 
-  const data = await fetch(url).then((res) => res.json());
+  const res = await fetch(url);
+  const totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "0", 10);
+
+  const data = await res.json();
 
   const parsedData: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(data);
 
-  return parsedData.map(categoryPostResponseToArticleCardPost);
+  const posts = parsedData.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    posts,
+    hasMore: offset < totalPages - 1,
+  };
 }
