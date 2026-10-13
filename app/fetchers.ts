@@ -2,19 +2,29 @@ import { z } from "zod";
 import {
   type ArticleCardData,
   type ArticleData,
+  type Author,
   BASE_URL,
   type CategoryPostsPage,
 } from "./types";
 import { formatDate, plainText } from "./utils";
 
+const AuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+const ArticleAuthorSchema = z.object({
+  term_id: z.number(),
+  display_name: z.string(),
+  slug: z.string(),
+});
+
 const ArticleSchema = z.object({
   id: z.number(),
   title: z.object({ rendered: z.string() }),
   slug: z.string(),
-  authors: z
-    .object({ slug: z.string(), display_name: z.string() })
-    .array()
-    .optional(),
+  authors: ArticleAuthorSchema.array().optional(),
   categories: z.number().array(),
   featured_media: z.number(),
   date: z.iso.datetime({ local: true }),
@@ -28,20 +38,32 @@ const MediaSchema = z.object({
 
 const CategoryPostSchema = ArticleSchema.omit({
   content: true,
-  categories: true,
 });
 
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
+type AuthorResponse = z.infer<typeof AuthorSchema>;
+type ArticleAuthorResponse = z.infer<typeof ArticleAuthorSchema>;
+
+function articleAuthorToAuthor(articleAuthor: ArticleAuthorResponse): Author {
+  return {
+    id: articleAuthor.term_id,
+    slug: articleAuthor.slug,
+    display_name: articleAuthor.display_name,
+  };
+}
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
   const cleanTitle = plainText(articleRes.title.rendered);
+  const cleanAuthors = articleRes.authors
+    ? articleRes.authors.map(articleAuthorToAuthor)
+    : [];
   return {
     id: articleRes.id,
     title: cleanTitle,
     slug: articleRes.slug,
-    authors: articleRes.authors,
+    authors: cleanAuthors,
     featured_media: articleRes.featured_media,
     category: articleRes.categories[0],
     pubDate: formatDate(new Date(articleRes.date)),
@@ -53,11 +75,15 @@ function articleResponseToArticleData(articleRes: ArticleResponse) {
 function categoryPostResponseToArticleCardPost(
   categoryPostRes: CategoryPostResponse,
 ) {
+  const cleanAuthors = categoryPostRes.authors
+    ? categoryPostRes.authors.map(articleAuthorToAuthor)
+    : [];
   return {
     id: categoryPostRes.id,
     title: categoryPostRes.title.rendered,
     slug: categoryPostRes.slug,
-    authors: categoryPostRes.authors,
+    authors: cleanAuthors,
+    category: categoryPostRes.categories[0],
     featured_media: categoryPostRes.featured_media,
     pubDate: formatDate(new Date(categoryPostRes.date)),
     excerpt: categoryPostRes.excerpt.rendered,
@@ -77,7 +103,7 @@ export async function retrieveCategoryPosts(
   url.searchParams.set("per_page", String(pageSize + 1));
   url.searchParams.set(
     "_fields",
-    "id,date,link,slug,title,excerpt,authors,featured_media",
+    "id,date,categories,link,slug,title,excerpt,authors,featured_media",
   );
 
   const response = await fetch(url);
@@ -85,13 +111,18 @@ export async function retrieveCategoryPosts(
     throw new Error(`Could not load articles (${response.status})`);
   }
 
+  const totalPages = parseInt(
+    response.headers.get("X-WP-TotalPages") || "0",
+    10,
+  );
+
   const postResponses: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(await response.json());
   const posts = postResponses.map(categoryPostResponseToArticleCardPost);
 
   return {
     posts: posts.slice(0, pageSize),
-    hasMore: posts.length > pageSize,
+    hasMore: offset < totalPages - 1,
   };
 }
 
@@ -124,6 +155,7 @@ export async function retrieveArticleFromSlug(
     "_fields",
     fields.map(encodeURIComponent).join(","),
   );
+
   const data = await fetch(articleUrl).then((res) => res.json());
 
   const parsedData: ArticleResponse[] = ArticleSchema.array().parse(data);
@@ -155,4 +187,67 @@ export async function retrieveRelatedArticles(
     CategoryPostSchema.array().parse(data);
 
   return parsedData.map(categoryPostResponseToArticleCardPost);
+}
+
+export async function retrieveAuthorFromSlug(slug: string): Promise<Author> {
+  const fields = ["id", "name", "slug"];
+  const url = new URL(`${BASE_URL}/ppma_author`);
+  url.searchParams.set("slug", slug);
+  url.searchParams.set("_fields", fields.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: AuthorResponse[] = AuthorSchema.array().parse(data);
+  if (parsedData.length < 1) {
+    throw new Error("Author not found.");
+  }
+  const author = parsedData[0];
+
+  return {
+    id: author.id,
+    display_name: author.name,
+    slug: author.slug,
+  };
+}
+
+export async function retrieveArticlesFromAuthor(
+  author_id: number,
+  offset: number,
+  pageSize: number,
+): Promise<{ posts: Array<ArticleCardData>; hasMore: boolean }> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "content.rendered",
+    "excerpt",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+
+  const url = new URL(`${BASE_URL}/posts`);
+  // NOTE: This is because we use the PublishPress Authors Plugin.
+  // If the API changes or we use a different plugin, THIS FUNCTION MUST BE CHANGED
+  url.searchParams.set("ppma_author", String(author_id));
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("offset", String(offset));
+  url.searchParams.set("per_page", String(pageSize + 1));
+  url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
+
+  const res = await fetch(url);
+  const totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "0", 10);
+
+  const data = await res.json();
+
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  const posts = parsedData.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    posts,
+    hasMore: offset < totalPages - 1,
+  };
 }

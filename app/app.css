@@ -11,6 +11,8 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: "Calluna";
   --color-vant-purple: #5d61ba;
+  --color-vant-purple-light: #e4e5fe;
+  --color-vant-purple-dark: #282b7d;
 }
 
 html,
