@@ -8,14 +8,23 @@ import {
 } from "./types";
 import { formatDate, plainText } from "./utils";
 
+const AuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+const ArticleAuthorSchema = z.object({
+  term_id: z.number(),
+  display_name: z.string(),
+  slug: z.string(),
+});
+
 const ArticleSchema = z.object({
   id: z.number(),
   title: z.object({ rendered: z.string() }),
   slug: z.string(),
-  authors: z
-    .object({ slug: z.string(), display_name: z.string() })
-    .array()
-    .optional(),
+  authors: ArticleAuthorSchema.array().optional(),
   categories: z.number().array(),
   featured_media: z.number(),
   date: z.iso.datetime({ local: true }),
@@ -32,24 +41,30 @@ const CategoryPostSchema = ArticleSchema.omit({
   categories: true,
 });
 
-const AuthorSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  slug: z.string(),
-});
-
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
 type AuthorResponse = z.infer<typeof AuthorSchema>;
+type ArticleAuthorResponse = z.infer<typeof ArticleAuthorSchema>;
+
+function articleAuthorToAuthor(articleAuthor: ArticleAuthorResponse): Author {
+  return {
+    id: articleAuthor.term_id,
+    slug: articleAuthor.slug,
+    display_name: articleAuthor.display_name,
+  };
+}
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
   const cleanTitle = plainText(articleRes.title.rendered);
+  const cleanAuthors = articleRes.authors
+    ? articleRes.authors.map(articleAuthorToAuthor)
+    : [];
   return {
     id: articleRes.id,
     title: cleanTitle,
     slug: articleRes.slug,
-    authors: articleRes.authors,
+    authors: cleanAuthors,
     featured_media: articleRes.featured_media,
     category: articleRes.categories[0],
     pubDate: formatDate(new Date(articleRes.date)),
@@ -61,11 +76,14 @@ function articleResponseToArticleData(articleRes: ArticleResponse) {
 function categoryPostResponseToArticleCardPost(
   categoryPostRes: CategoryPostResponse,
 ) {
+  const cleanAuthors = categoryPostRes.authors
+    ? categoryPostRes.authors.map(articleAuthorToAuthor)
+    : [];
   return {
     id: categoryPostRes.id,
     title: categoryPostRes.title.rendered,
     slug: categoryPostRes.slug,
-    authors: categoryPostRes.authors,
+    authors: cleanAuthors,
     featured_media: categoryPostRes.featured_media,
     pubDate: formatDate(new Date(categoryPostRes.date)),
     excerpt: categoryPostRes.excerpt.rendered,
