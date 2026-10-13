@@ -103,7 +103,7 @@ export async function retrieveCategoryPosts(
   url.searchParams.set("per_page", String(pageSize + 1));
   url.searchParams.set(
     "_fields",
-    "id,date,link,slug,title,excerpt,authors,featured_media",
+    "id,date,categories,link,slug,title,excerpt,authors,featured_media",
   );
 
   const response = await fetch(url);
