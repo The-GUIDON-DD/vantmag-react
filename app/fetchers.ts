@@ -38,7 +38,6 @@ const MediaSchema = z.object({
 
 const CategoryPostSchema = ArticleSchema.omit({
   content: true,
-  categories: true,
 });
 
 type MediaResponse = z.infer<typeof MediaSchema>;
@@ -84,6 +83,7 @@ function categoryPostResponseToArticleCardPost(
     title: categoryPostRes.title.rendered,
     slug: categoryPostRes.slug,
     authors: cleanAuthors,
+    category: categoryPostRes.categories[0],
     featured_media: categoryPostRes.featured_media,
     pubDate: formatDate(new Date(categoryPostRes.date)),
     excerpt: categoryPostRes.excerpt.rendered,

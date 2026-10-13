@@ -1,7 +1,7 @@
 export const BASE_URL = "https://vantage.theguidon.com/wp-json/wp/v2";
 
 export interface Author {
-  id?: number;
+  id: number;
   slug: string;
   display_name: string;
 }
@@ -18,7 +18,7 @@ export interface ArticleData {
   content: string;
 }
 
-export type ArticleCardData = Omit<ArticleData, "content" | "category">;
+export type ArticleCardData = Omit<ArticleData, "content">;
 
 // export interface ArticleCardPost {
 //   id: number;
