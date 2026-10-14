@@ -303,7 +303,7 @@ export async function retrieveTagsFromSearch(
   url.searchParams.set("search", term);
   // Match the original site, which only lists tags that have posts.
   url.searchParams.set("hide_empty", "true");
-  url.searchParams.set("per_page", "100");
+  url.searchParams.set("per_page", "10");
   url.searchParams.set("_fields", "id,name,slug");
 
   const response = await fetch(url);
