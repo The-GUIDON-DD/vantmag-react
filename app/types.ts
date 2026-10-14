@@ -1,15 +1,17 @@
 export const BASE_URL = "https://vantage.theguidon.com/wp-json/wp/v2";
 
 export interface Author {
+  id: number;
   slug: string;
   display_name: string;
 }
 
 export interface ArticleData {
+  id: number;
   title: string;
   slug: string;
-  authors: Author[];
-  featured_image: number;
+  authors?: Author[];
+  featured_media: number;
   category: number;
   pubDate: string;
   excerpt: string;
@@ -18,7 +20,28 @@ export interface ArticleData {
 
 export type ArticleCardData = Omit<ArticleData, "content">;
 
-export interface ArticleSearchResults {
-  articles: ArticleCardData[];
+// export interface ArticleCardPost {
+//   id: number;
+//   date: string;
+//   link: string;
+//   slug: string;
+//   title: { rendered: string };
+//   excerpt: { rendered: string };
+//   featured_media: number;
+//   authors?: Author[];
+// }
+
+export type CategoryDetails = {
+  id: number;
+  title: string;
+  path: string;
+  icon: string;
+  color: string;
+  description: string;
+  descriptionColor: string;
+};
+
+export interface CategoryPostsPage {
+  posts: ArticleCardData[];
   hasMore: boolean;
 }

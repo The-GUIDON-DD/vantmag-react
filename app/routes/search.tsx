@@ -1,24 +1,19 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router";
-import Bylines from "~/components/bylines";
-import Chip from "~/components/chip";
+import type { CSSProperties, ReactNode } from "react";
+import { CgSearch } from "react-icons/cg";
+import { Form, Link, useSearchParams } from "react-router";
+import ArticleCard from "~/components/article-card";
 import {
   retrieveArticlesFromSearch,
-  retrieveAuthorsFromSearch,
-  retrieveMediaFromID,
+  retrieveFeaturedPosts,
+  retrieveTagsFromSearch,
 } from "~/fetchers";
 import type { ArticleCardData } from "~/types";
 import { categories } from "../../constants";
 
-const PAGE_SIZE = 10;
-
-// Lets "expose" match "EXPOSÉ".
-function normalize(text: string) {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
+// Match the number of articles in the original search layout.
+const PAGE_SIZE = 6;
+const FEATURED_COUNT = 3;
 
 export function meta() {
   return [
@@ -27,51 +22,107 @@ export function meta() {
   ];
 }
 
-function ArticleCard({ article }: { article: ArticleCardData }) {
-  const category = categories.find(({ id }) => id === article.category);
-  const mediaID = article.featured_image;
-  const { data: media } = useQuery({
-    queryKey: ["rendered", mediaID],
-    queryFn: () => retrieveMediaFromID(mediaID),
-    enabled: !!mediaID,
+function SearchField({
+  term,
+  className = "",
+}: {
+  term: string;
+  className?: string;
+}) {
+  return (
+    <Form
+      action="/search"
+      role="search"
+      className={`flex w-full items-center gap-3 rounded-[32px] bg-[#dddffe]/80 px-6 py-4 ${className}`}
+    >
+      <CgSearch
+        aria-hidden="true"
+        className="shrink-0 text-2xl text-vant-purple"
+      />
+      <input
+        // Remount when the URL changes so back/forward updates the input.
+        key={term}
+        type="text"
+        name="s"
+        defaultValue={term}
+        aria-label="Search"
+        placeholder="Search an article, author, or category"
+        className="min-w-0 grow border-none bg-transparent text-base leading-6 placeholder:text-[#6a757c] focus:outline-none md:text-xl md:leading-6"
+      />
+    </Form>
+  );
+}
+
+function PageHeading({ children }: { children: ReactNode }) {
+  return (
+    <div className="mb-5 flex items-center gap-3 lg:mb-6">
+      <h1 className="min-w-0 font-display text-2xl leading-[1.2] font-bold break-words md:text-4xl lg:text-5xl">
+        {children}
+      </h1>
+      <div className="h-px min-w-8 flex-1 bg-neutral-900" />
+    </div>
+  );
+}
+
+function SectionHeading({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="mb-2.5 font-display text-xl font-bold md:mb-3 md:text-2xl lg:mb-4 lg:text-[32px]">
+      {children}
+    </h2>
+  );
+}
+
+function ArticleGrid({ posts }: { posts: ArticleCardData[] }) {
+  return (
+    <div className="grid gap-5 md:gap-6 lg:grid-cols-3 lg:gap-8 xl:gap-10">
+      {posts.map((post) => {
+        const category = Object.values(categories).find(
+          ({ id }) => id === post.category,
+        );
+        const highlightStyle = {
+          "--category-article-highlight": `color-mix(in srgb, ${category?.color ?? "#dddffe"} 18%, white)`,
+        } as CSSProperties;
+
+        return (
+          <div key={post.id} style={highlightStyle}>
+            <ArticleCard post={post} category={category} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Mirrors the original site, which shows its "not found" layout when a search
+// has no matching articles.
+function NoResults({ term }: { term: string }) {
+  const { data: featuredPosts } = useQuery({
+    queryKey: ["featured-posts"],
+    queryFn: () => retrieveFeaturedPosts(FEATURED_COUNT),
+    // Keep the same random picks while the user stays on the page.
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   return (
-    <li className="flex flex-col sm:flex-row gap-4 border-b border-gray-200 pb-8">
-      {!!mediaID && (
-        <section
-          className="w-full sm:w-48 flex-none aspect-[3/2] overflow-hidden bg-gray-100 article-featured"
-          // biome-ignore lint: needed to embed content from WordPress API
-          dangerouslySetInnerHTML={{ __html: media ?? "" }}
-        />
-      )}
-      <section className="flex flex-col gap-2">
-        {category && (
-          <Chip
-            title={category.title}
-            icon={category.icon}
-            color={category.color}
-          />
-        )}
-        <Link to={`/${article.slug}`}>
-          <h2
-            className="font-display text-2xl lg:text-3xl text-black"
-            // biome-ignore lint: needed to embed content from WordPress API
-            dangerouslySetInnerHTML={{ __html: article.title }}
-          />
-        </Link>
-        <p
-          className="text-gray-500"
-          // biome-ignore lint: needed to embed content from WordPress API
-          dangerouslySetInnerHTML={{ __html: article.excerpt }}
-        />
-        <section className="flex gap-2 text-sm text-gray-400 article-bylines">
-          <Bylines authors={article.authors} />
-          <span>&middot;</span>
-          <span>{article.pubDate}</span>
+    <>
+      <PageHeading>No results for &ldquo;{term}&rdquo;</PageHeading>
+      <p className="mb-10 lg:mb-14">
+        We couldn&rsquo;t find any articles matching your search. Check the
+        spelling or try different keywords.
+      </p>
+
+      <SectionHeading>Try searching for it again:</SectionHeading>
+      <SearchField term={term} className="mb-10 lg:mb-14" />
+
+      {!!featuredPosts?.length && (
+        <section>
+          <SectionHeading>
+            Or, take a look at a few featured articles:
+          </SectionHeading>
+          <ArticleGrid posts={featuredPosts} />
         </section>
-      </section>
-    </li>
+      )}
+    </>
   );
 }
 
@@ -81,9 +132,9 @@ export default function Search() {
   const hasQuery = term.length > 0;
 
   const {
-    isPending: isArticlesPending,
-    isError: isArticlesError,
-    data: articleResults,
+    isPending,
+    isError,
+    data,
     isFetchNextPageError,
     isFetchingNextPage,
     hasNextPage,
@@ -95,130 +146,94 @@ export default function Search() {
       retrieveArticlesFromSearch(term, pageParam, PAGE_SIZE),
     getNextPageParam: (lastPage, pages) =>
       lastPage.hasMore
-        ? pages.reduce((count, page) => count + page.articles.length, 0)
+        ? pages.reduce((count, page) => count + page.posts.length, 0)
         : undefined,
     enabled: hasQuery,
   });
 
-  const {
-    isPending: isAuthorsPending,
-    isError: isAuthorsError,
-    data: authorResults,
-  } = useQuery({
-    queryKey: ["search-authors", term],
-    queryFn: () => retrieveAuthorsFromSearch(term),
+  // Tags are supplementary, so a failed request just hides the section.
+  const { data: tags } = useQuery({
+    queryKey: ["search-tags", term],
+    queryFn: () => retrieveTagsFromSearch(term),
     enabled: hasQuery,
   });
 
-  const categoryResults = hasQuery
-    ? categories.filter(({ title }) =>
-        normalize(title).includes(normalize(term)),
-      )
-    : [];
+  const containerClasses =
+    "mx-auto w-full max-w-[1240px] px-4 pt-5 pb-10 font-sans text-black lg:w-[90%] lg:px-5 lg:pt-14 lg:pb-20";
 
   if (!hasQuery) {
     return (
-      <main className="w-full min-h-screen bg-white px-6 lg:px-[10%] py-16">
-        <p className="text-gray-400 text-lg lg:text-xl">
+      <main className={containerClasses}>
+        <SearchField term="" className="mb-5 lg:mb-10" />
+        <p className="text-lg text-gray-400 lg:text-xl">
           Search for an article, author, or category.
         </p>
       </main>
     );
   }
 
-  // Offsets can shift if a post is published between loads, so drop repeats.
-  const articles = [
-    ...new Map(
-      articleResults?.pages
-        .flatMap((page) => page.articles)
-        .map((article) => [article.slug, article]),
-    ).values(),
-  ];
-  const isPending = isArticlesPending || isAuthorsPending;
-  const isError = (isArticlesError && !articleResults) || isAuthorsError;
-  const hasNoResults =
-    !isPending &&
-    !isError &&
-    articles.length === 0 &&
-    (authorResults?.length ?? 0) === 0 &&
-    categoryResults.length === 0;
+  const posts = data?.pages.flatMap((page) => page.posts) ?? [];
+
+  if (!isPending && !isError && posts.length === 0) {
+    return (
+      <main className={containerClasses}>
+        <NoResults term={term} />
+      </main>
+    );
+  }
 
   return (
-    <main className="w-full min-h-screen bg-white px-6 lg:px-[10%] py-10 flex flex-col gap-10">
-      <h1 className="font-display text-4xl lg:text-6xl text-black">
-        Search results for &ldquo;{term}&rdquo;
-      </h1>
+    <main className={containerClasses}>
+      <SearchField term={term} className="mb-5 lg:mb-10" />
+      <PageHeading>Search results for &ldquo;{term}&rdquo;</PageHeading>
 
-      {isPending && <p className="text-gray-400 text-lg">Searching&hellip;</p>}
+      {isPending && <p className="text-lg text-gray-400">Searching…</p>}
 
-      {isError && (
-        <p className="text-red-500 text-lg">
+      {isError && !data && (
+        <p role="alert" className="text-lg text-red-700">
           Something went wrong while searching. Please try again.
         </p>
       )}
 
-      {hasNoResults && (
-        <p className="text-gray-400 text-lg">
-          No results found for &ldquo;{term}&rdquo;.
-        </p>
-      )}
-
-      {categoryResults.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <p className="font-bold uppercase text-gray-400 text-lg">
-            Categories
-          </p>
-          <section className="flex flex-wrap gap-4">
-            {categoryResults.map(({ title, path, icon, color }) => (
-              <Link to={path} key={title}>
-                <Chip title={title} icon={icon} color={color} />
-              </Link>
-            ))}
-          </section>
-        </section>
-      )}
-
-      {!!authorResults?.length && (
-        <section className="flex flex-col gap-4">
-          <p className="font-bold uppercase text-gray-400 text-lg">Authors</p>
-          <ul className="list-none flex flex-wrap gap-6">
-            {authorResults.map(({ slug, display_name }) => (
-              <li key={slug}>
+      {!!tags?.length && posts.length > 0 && (
+        <section>
+          <SectionHeading>Tags</SectionHeading>
+          <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-base font-bold text-vant-purple md:text-lg lg:text-xl">
+            {tags.map(({ id, name, slug }, ix) => (
+              // Keep each dot with the tag before it so lines never start with one.
+              <span key={id} className="flex items-center gap-x-3">
                 <Link
-                  to={`/author/${slug}`}
-                  className="text-vant-purple font-bold text-lg hover:underline"
+                  to={`/tag/${slug}`}
+                  className="underline decoration-transparent transition-colors hover:decoration-vant-purple"
                 >
-                  {display_name}
+                  {name}
                 </Link>
-              </li>
+                {ix < tags.length - 1 && <span aria-hidden="true">•</span>}
+              </span>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
-      {articles.length > 0 && (
-        <section className="flex flex-col gap-6">
-          <p className="font-bold uppercase text-gray-400 text-lg">Articles</p>
-          <ul className="list-none flex flex-col gap-8">
-            {articles.map((article) => (
-              <ArticleCard key={article.slug} article={article} />
-            ))}
-          </ul>
+      {posts.length > 0 && (
+        <section>
+          <SectionHeading>Articles</SectionHeading>
+          <ArticleGrid posts={posts} />
 
           {hasNextPage && (
-            <div className="mt-6 text-center">
+            <div className="mt-14 text-center">
               <button
                 type="button"
                 onClick={() => void fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="rounded-full bg-[#dddffe] px-16 py-2.5 text-sm font-bold uppercase text-vant-purple hover:bg-[#cdd0ff] disabled:opacity-60"
+                className="w-full rounded-full bg-[#dddffe] px-10 py-3 text-xs font-bold uppercase text-vant-purple hover:bg-[#cdd0ff] disabled:opacity-60 md:w-auto md:px-16 md:py-2.5 md:text-sm md:leading-[1.2]"
               >
-                {isFetchingNextPage ? "Loading…" : "Load more"}
+                {isFetchingNextPage ? "Loading…" : "Show me more"}
               </button>
             </div>
           )}
           {isFetchNextPageError && (
-            <p role="alert" className="text-center text-red-700">
+            <p role="alert" className="mt-4 text-center text-red-700">
               Could not load more articles. Please try again.
             </p>
           )}
