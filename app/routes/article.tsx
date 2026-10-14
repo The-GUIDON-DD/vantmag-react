@@ -92,7 +92,7 @@ export default function Article({ params }: Route.ComponentProps) {
                 color={category.color}
               />
             )}
-            <h1 className="text-black text-5xl lg:text-7xl w-full font-display">
+            <h1 className="text-black text-5xl lg:text-7xl w-full font-display font-bold">
               {data.title}
             </h1>
             <section>
