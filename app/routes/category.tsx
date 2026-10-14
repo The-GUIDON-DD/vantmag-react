@@ -156,7 +156,7 @@ export default function Category({ params }: Route.ComponentProps) {
             alt=""
             className="h-8 w-8 shrink-0 object-contain lg:h-12 lg:w-12 xl:h-[72px] xl:w-[72px]"
           />
-          <h1 className="text-left font-display text-[32px] leading-[1.05] lg:text-5xl xl:text-[72px]">
+          <h1 className="text-left font-display font-bold text-[32px] leading-[1.05] lg:text-5xl xl:text-[72px]">
             {category.title}
           </h1>
         </div>

@@ -3,7 +3,7 @@ import type { CategoryDetails } from "./app/types";
 export const categories: Record<string, CategoryDetails> = {
   "tv-and-film": {
     id: 13,
-    title: "TV & FILM",
+    title: "TV & Film",
     path: "/category/tv-and-film",
     icon: "/icons/chip/tv-and-film.svg",
     color: "#ef3e68",
@@ -13,7 +13,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   food: {
     id: 12,
-    title: "FOOD",
+    title: "Food",
     path: "/category/food",
     icon: "/icons/chip/food.svg",
     color: "#f9a524",
@@ -23,7 +23,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   "theater-and-the-arts": {
     id: 11,
-    title: "THEATER & ARTS",
+    title: "Theater & Arts",
     path: "/category/theater-and-the-arts",
     icon: "/icons/chip/theater-and-the-arts.svg",
     color: "#755489",
@@ -33,7 +33,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   music: {
     id: 4,
-    title: "MUSIC",
+    title: "Music",
     path: "/category/music",
     icon: "/icons/chip/music.svg",
     color: "#b5c932",
@@ -43,7 +43,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   hype: {
     id: 243,
-    title: "HYPE",
+    title: "Hype",
     path: "/category/hype",
     icon: "/icons/chip/hype.svg",
     color: "#d63ba3",
@@ -53,7 +53,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   hub: {
     id: 242,
-    title: "HUB",
+    title: "Hub",
     path: "/category/hub",
     icon: "/icons/chip/hub.svg",
     color: "#3dbb95",
@@ -63,7 +63,7 @@ export const categories: Record<string, CategoryDetails> = {
   },
   expose: {
     id: 244,
-    title: "EXPOSÉ",
+    title: "Exposé",
     path: "/category/expose",
     icon: "/icons/chip/expose.svg",
     color: "#f6B50b",
