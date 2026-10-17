@@ -1,32 +1,131 @@
 import { z } from "zod";
-import { categories } from "../constants";
 import {
+  type ArticleCardData,
   type ArticleData,
+  type Author,
   BASE_URL,
+  type CategoryPostsPage,
   type HomeData,
-  type PostCard,
 } from "./types";
-import { decodeEntities, formatDate, toPlainText } from "./utils";
+import { formatDate, plainText } from "./utils";
 
-const ArticleSchema = z
-  .object({
-    title: z.object({ rendered: z.string() }),
-    slug: z.string(),
-    authors: z.object({ slug: z.string(), display_name: z.string() }).array(),
-    categories: z.number().array(),
-    featured_media: z.number(),
-    date: z.iso.datetime({ local: true }),
-    excerpt: z.object({ rendered: z.string() }),
-    content: z.object({ rendered: z.string() }),
-  })
-  .array();
+const AuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+const ArticleAuthorSchema = z.object({
+  term_id: z.number(),
+  display_name: z.string(),
+  slug: z.string(),
+});
+
+const ArticleSchema = z.object({
+  id: z.number(),
+  title: z.object({ rendered: z.string() }),
+  slug: z.string(),
+  authors: ArticleAuthorSchema.array().optional(),
+  categories: z.number().array(),
+  featured_media: z.number(),
+  date: z.iso.datetime({ local: true }),
+  excerpt: z.object({ rendered: z.string() }),
+  content: z.object({ rendered: z.string() }),
+});
 
 const MediaSchema = z.object({
   description: z.object({ rendered: z.string() }),
 });
 
+const CategoryPostSchema = ArticleSchema.omit({
+  content: true,
+});
+
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
+type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
+type AuthorResponse = z.infer<typeof AuthorSchema>;
+type ArticleAuthorResponse = z.infer<typeof ArticleAuthorSchema>;
+
+function articleAuthorToAuthor(articleAuthor: ArticleAuthorResponse): Author {
+  return {
+    id: articleAuthor.term_id,
+    slug: articleAuthor.slug,
+    display_name: articleAuthor.display_name,
+  };
+}
+
+function articleResponseToArticleData(articleRes: ArticleResponse) {
+  const cleanTitle = plainText(articleRes.title.rendered);
+  const cleanAuthors = articleRes.authors
+    ? articleRes.authors.map(articleAuthorToAuthor)
+    : [];
+  return {
+    id: articleRes.id,
+    title: cleanTitle,
+    slug: articleRes.slug,
+    authors: cleanAuthors,
+    featured_media: articleRes.featured_media,
+    category: articleRes.categories[0],
+    pubDate: formatDate(new Date(articleRes.date)),
+    excerpt: articleRes.excerpt.rendered,
+    content: articleRes.content.rendered,
+  };
+}
+
+function categoryPostResponseToArticleCardPost(
+  categoryPostRes: CategoryPostResponse,
+) {
+  const cleanAuthors = categoryPostRes.authors
+    ? categoryPostRes.authors.map(articleAuthorToAuthor)
+    : [];
+  return {
+    id: categoryPostRes.id,
+    title: categoryPostRes.title.rendered,
+    slug: categoryPostRes.slug,
+    authors: cleanAuthors,
+    category: categoryPostRes.categories[0],
+    featured_media: categoryPostRes.featured_media,
+    pubDate: formatDate(new Date(categoryPostRes.date)),
+    excerpt: categoryPostRes.excerpt.rendered,
+  };
+}
+
+export async function retrieveCategoryPosts(
+  categoryId: number,
+  offset: number,
+  pageSize: number,
+): Promise<CategoryPostsPage> {
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("categories", String(categoryId));
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("offset", String(offset));
+  url.searchParams.set("per_page", String(pageSize + 1));
+  url.searchParams.set(
+    "_fields",
+    "id,date,categories,link,slug,title,excerpt,authors,featured_media",
+  );
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load articles (${response.status})`);
+  }
+
+  const totalPages = parseInt(
+    response.headers.get("X-WP-TotalPages") || "0",
+    10,
+  );
+
+  const postResponses: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(await response.json());
+  const posts = postResponses.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    posts: posts.slice(0, pageSize),
+    hasMore: offset < totalPages - 1,
+  };
+}
 
 export async function retrieveMediaFromID(id: number) {
   const mediaUrl = new URL(`${BASE_URL}/media/${id}`);
@@ -41,6 +140,7 @@ export async function retrieveArticleFromSlug(
   slug: string,
 ): Promise<ArticleData> {
   const fields = [
+    "id",
     "slug",
     "date",
     "title.rendered",
@@ -56,156 +156,118 @@ export async function retrieveArticleFromSlug(
     "_fields",
     fields.map(encodeURIComponent).join(","),
   );
+
   const data = await fetch(articleUrl).then((res) => res.json());
 
-  const parsedData: ArticleResponse = ArticleSchema.parse(data);
-  const article = parsedData[0];
+  const parsedData: ArticleResponse[] = ArticleSchema.array().parse(data);
+  const articleRes = parsedData[0];
+
+  return articleResponseToArticleData(articleRes);
+}
+
+export async function retrieveRelatedArticles(
+  article: ArticleData,
+): Promise<Array<ArticleCardData>> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("categories", String(article.category));
+  url.searchParams.set("exclude", String(article.id));
+  url.searchParams.set("per_page", String(3));
+  url.searchParams.set("fields", fields.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  return parsedData.map(categoryPostResponseToArticleCardPost);
+}
+
+export async function retrieveAuthorFromSlug(slug: string): Promise<Author> {
+  const fields = ["id", "name", "slug"];
+  const url = new URL(`${BASE_URL}/ppma_author`);
+  url.searchParams.set("slug", slug);
+  url.searchParams.set("_fields", fields.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: AuthorResponse[] = AuthorSchema.array().parse(data);
+  if (parsedData.length < 1) {
+    throw new Error("Author not found.");
+  }
+  const author = parsedData[0];
 
   return {
-    title: article.title.rendered,
-    slug: slug,
-    authors: article.authors,
-    featured_image: article.featured_media,
-    category: article.categories[0],
-    pubDate: formatDate(article.date),
-    excerpt: article.excerpt.rendered,
-    content: article.content.rendered,
+    id: author.id,
+    display_name: author.name,
+    slug: author.slug,
   };
 }
 
-const POST_CARD_FIELDS =
-  "slug,date,title.rendered,excerpt.rendered,categories,authors,featured_media";
+export async function retrieveArticlesFromAuthor(
+  author_id: number,
+  offset: number,
+  pageSize: number,
+): Promise<{ posts: Array<ArticleCardData>; hasMore: boolean }> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "content.rendered",
+    "excerpt",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
 
-const PostCardSchema = z
-  .object({
-    slug: z.string(),
-    date: z.iso.datetime({ local: true }),
-    title: z.object({ rendered: z.string() }),
-    excerpt: z.object({ rendered: z.string() }),
-    categories: z.number().array(),
-    authors: z
-      .object({
-        slug: z.string(),
-        display_name: z.string(),
-        avatar_url: z
-          .union([z.object({ url: z.string() }), z.string(), z.null()])
-          .optional(),
-      })
-      .array(),
-    featured_media: z.number(),
-  })
-  .array();
+  const url = new URL(`${BASE_URL}/posts`);
+  // NOTE: This is because we use the PublishPress Authors Plugin.
+  // If the API changes or we use a different plugin, THIS FUNCTION MUST BE CHANGED
+  url.searchParams.set("ppma_author", String(author_id));
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("offset", String(offset));
+  url.searchParams.set("per_page", String(pageSize + 1));
+  url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
 
-const MediaListSchema = z
-  .object({
-    id: z.number(),
-    alt_text: z.string().optional(),
-    source_url: z.string().optional(),
-    media_details: z
-      .object({
-        sizes: z
-          .record(z.string(), z.object({ source_url: z.string() }))
-          .optional(),
-      })
-      .optional(),
-  })
-  .array();
+  const res = await fetch(url);
+  const totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "0", 10);
 
-type MediaEntry = { url: string; alt: string };
+  const data = await res.json();
 
-/**
- * Sizes WordPress generates, smallest adequate first. Cards top out at 200px
- * tall, so serving `source_url` (the untouched upload) would pull megabytes per
- * card.
- */
-const PREFERRED_SIZES = [
-  "vantmag-medium",
-  "medium_large",
-  "vantmag-large",
-  "large",
-  "medium",
-  "full",
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  const posts = parsedData.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    posts,
+    hasMore: offset < totalPages - 1,
+  };
+}
+
+const HOME_FIELDS = [
+  "id",
+  "date",
+  "categories",
+  "slug",
+  "title",
+  "excerpt",
+  "authors",
+  "featured_media",
 ];
 
-function pickImageUrl(media: z.infer<typeof MediaListSchema>[number]) {
-  const sizes = media.media_details?.sizes;
-  if (sizes) {
-    for (const size of PREFERRED_SIZES) {
-      const found = sizes[size];
-      if (found) return found.source_url;
-    }
-  }
-  return media.source_url ?? null;
-}
-
 /**
- * Resolves many attachment ids in one request. `_fields` cannot narrow into
- * `media_details.sizes`, so the whole object comes back — still far cheaper
- * than a request per card, and cheaper than the full-size images it avoids.
- */
-export async function retrieveMediaMap(
-  ids: number[],
-): Promise<Record<number, MediaEntry>> {
-  const unique = [...new Set(ids.filter((id) => id > 0))];
-  if (unique.length === 0) return {};
-
-  const data = await fetch(
-    `${BASE_URL}/media?include=${unique.join(",")}&per_page=100&_fields=id,alt_text,source_url,media_details`,
-  ).then((res) => res.json());
-
-  const map: Record<number, MediaEntry> = {};
-  for (const media of MediaListSchema.parse(data)) {
-    const url = pickImageUrl(media);
-    if (url) map[media.id] = { url, alt: media.alt_text ?? "" };
-  }
-  return map;
-}
-
-/** Picks the first category the site actually has a chip for. */
-function resolveCategory(ids: number[]) {
-  return ids.find((id) => categories.some((c) => c.id === id)) ?? null;
-}
-
-async function toPostCards(
-  raw: z.infer<typeof PostCardSchema>,
-): Promise<PostCard[]> {
-  const mediaMap = await retrieveMediaMap(raw.map((p) => p.featured_media));
-
-  return raw.map((post) => {
-    const media = mediaMap[post.featured_media];
-    return {
-      slug: post.slug,
-      title: decodeEntities(post.title.rendered),
-      excerpt: toPlainText(post.excerpt.rendered),
-      authors: post.authors.map((a) => ({
-        slug: a.slug,
-        display_name: a.display_name,
-        avatar_url:
-          typeof a.avatar_url === "string"
-            ? a.avatar_url
-            : (a.avatar_url?.url ?? undefined),
-      })),
-      category: resolveCategory(post.categories),
-      pubDate: formatDate(post.date),
-      image: media?.url ?? null,
-      imageAlt: media?.alt || decodeEntities(post.title.rendered),
-    };
-  });
-}
-
-async function retrievePostCards(query: string): Promise<PostCard[]> {
-  const data = await fetch(
-    `${BASE_URL}/posts?${query}&_fields=${POST_CARD_FIELDS}`,
-  ).then((res) => res.json());
-
-  return toPostCards(PostCardSchema.parse(data));
-}
-
-/**
- * Deterministic shuffle. The old theme used PHP `rand()` for its suggestions
- * row; seeding off the slugs keeps the order stable between renders so the row
- * does not reshuffle on every re-render (and stays hydration-safe if SSR is
- * enabled later).
+ * Deterministic shuffle. The original theme used PHP `rand()` for its
+ * suggestions row; seeding off the slugs keeps the order stable between
+ * renders so the row does not reshuffle on every re-render.
  */
 function seededShuffle<T>(items: T[], seed: string) {
   let hash = 0;
@@ -223,11 +285,23 @@ function seededShuffle<T>(items: T[], seed: string) {
 }
 
 /**
- * Hero, latest and suggestions all come from one request. The old site's hero
- * is simply the newest post — there are no sticky posts on the site.
+ * Hero, latest and suggestions all come from one request. The hero is simply
+ * the newest post — the WordPress install has no sticky posts.
  */
 export async function retrieveHomeData(): Promise<HomeData> {
-  const posts = await retrievePostCards("per_page=13");
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("per_page", "13");
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("_fields", HOME_FIELDS.join(","));
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load articles (${response.status})`);
+  }
+
+  const parsed = CategoryPostSchema.array().parse(await response.json());
+  const posts = parsed.map(categoryPostResponseToArticleCardPost);
 
   return {
     hero: posts[0] ?? null,
@@ -237,14 +311,4 @@ export async function retrieveHomeData(): Promise<HomeData> {
       posts.map((p) => p.slug).join(),
     ).slice(0, 6),
   };
-}
-
-export async function retrieveCategoryPosts(
-  categoryId: number,
-  page = 1,
-  perPage = 9,
-): Promise<PostCard[]> {
-  return retrievePostCards(
-    `categories=${categoryId}&per_page=${perPage}&page=${page}`,
-  );
 }

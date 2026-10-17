@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans:
@@ -6,6 +11,8 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: "Calluna";
   --color-vant-purple: #5d61ba;
+  --color-vant-purple-light: #e4e5fe;
+  --color-vant-purple-dark: #282b7d;
 }
 
 html,
@@ -15,13 +22,49 @@ body {
   overflow-x: clip;
 }
 
-@font-face {
-  font-family: "Calluna";
-  font-style: normal;
-  font-weight: normal;
-  src:
-    local("Calluna"),
-    url("/public/fonts/calluna/calluna.woff") format("woff");
+.category-article {
+  position: relative;
+  isolation: isolate;
+  transition: background-color 150ms ease;
+}
+
+.category-article-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0.5rem;
+}
+
+.category-article-link:focus-visible {
+  outline: none;
+}
+
+.category-article-link:focus-visible::after {
+  outline: 2px solid var(--color-vant-purple);
+  outline-offset: 2px;
+}
+
+/* Keep category navigation above the page content. */
+body:has(.category-page) header.sticky,
+body:has(.category-page) aside.fixed {
+  z-index: 50;
+}
+
+.category-article:hover,
+.category-article:focus-within {
+  background-color: var(--category-article-highlight);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-article img {
+    transition: transform 200ms ease;
+  }
+
+  .category-article:hover img,
+  .category-article:focus-within img {
+    transform: scale(1.04);
+  }
 }
 
 .article-featured * {
@@ -36,227 +79,280 @@ body {
   text-decoration: underline;
 }
 
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Black.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Black.woff") format("woff");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Bold.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-BoldIt.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-BoldIt.woff") format("woff");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-It.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-It.woff") format("woff");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Light.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Regular.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Regular.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Semibold.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Semibold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-SemiboldIt.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-SemiboldIt.woff") format("woff");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* ---------------------------------------------------------------------------
- * Article card + grids, ported from the vantmag-revamp-2022 theme.
- * Kept as plain CSS because the layouts reshape cards positionally
- * (`#latest` grid areas, nth-of-type variants), which utility classes on the
- * component cannot express. Breakpoints mirror the original theme.
+ * Home page. Card styling now comes from `ArticleCard`; what remains here is
+ * the hero (full-bleed, image behind copy) and the section furniture the
+ * original theme uses, ported from vantmag-revamp-2022.
  * ------------------------------------------------------------------------ */
 
-.loading-anim {
-  background: linear-gradient(
-    to right,
-    #f7f7f7 0%,
-    #f7f7f7 25%,
-    #e2e2e2 45%,
-    #e2e2e2 55%,
-    #f7f7f7 75%,
-    #f7f7f7 100%
-  );
-  background-size: 400% 100%;
-  animation: loading-animation 3s infinite ease;
-}
-
-@keyframes loading-animation {
-  from {
-    background-position-x: 100%;
-  }
-  to {
-    background-position-x: 0%;
-  }
-}
-
-.article {
-  display: flex;
-  flex-flow: column nowrap;
-  row-gap: 16px;
-
-  text-decoration: none;
-  color: black;
-
-  padding: 16px;
-  margin: -16px;
-  border-radius: 8px;
-  transition: 0.3s;
-}
-
-.article:hover {
-  background-color: var(--hover-color);
-}
-
-.article .thumbnail-container {
-  overflow: clip;
-  border-radius: 4px;
-  height: 200px;
-  flex-shrink: 0;
-}
-
-.article .thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: 0.2s;
-}
-
-.article:hover .thumbnail {
-  transform: scale(1.05);
-}
-
-.article .info {
-  flex-grow: 1;
-  display: flex;
-  flex-flow: column nowrap;
-}
-
-.article .title {
-  font-weight: bold;
-  font-size: 16px;
-  word-break: break-word;
-  margin: 0 0 8px;
-}
-
-.article .excerpt {
-  font-size: 14px;
-  margin: 0 0 8px;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-.article .authors {
-  font-size: 14px;
-  color: #737373;
-  text-transform: uppercase;
-  font-weight: bold;
-  margin: auto 0 2px;
-}
-
-.article .date {
-  font-size: 14px;
-  color: #737373;
-  text-transform: uppercase;
-}
-
-.article .authors-date {
-  display: none;
-}
-
-.articles-grid {
-  display: grid;
-  grid-auto-rows: auto;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-}
-
-.heading-container {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  column-gap: 12px;
-  font-weight: bold;
-}
-
-.heading-container .line {
-  flex-grow: 1;
-  height: 1px;
-  background-color: black;
-}
-
-.load-more {
-  background-color: #dddffe;
-  color: #5d61ba;
-  padding: 10px 64px;
-  border: none;
-  border-radius: 24px;
-  display: block;
-  cursor: pointer;
-  width: fit-content;
-  margin: 0 auto;
-
-  font-size: 14px;
-  font-weight: bold;
-  text-transform: uppercase;
-  transition: 0.3s;
-}
-
-.load-more:hover:not(:disabled) {
-  background-color: #d2d4fe;
-}
-
-.load-more:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
-/* Hero — full-bleed thumbnail behind white text. */
 .hero .article {
   position: relative;
   min-height: 500px;
   padding: 40px 0;
-  margin: 0;
   color: white;
+  display: flex;
+  flex-flow: column nowrap;
   justify-content: center;
-  border-radius: 0;
 }
 
-.hero .article:hover {
-  background-color: transparent;
-}
-
-.hero .article .thumbnail-container {
+.hero .thumbnail-container {
   position: absolute;
   inset: 0;
-  height: 100%;
-  border-radius: 0;
   z-index: 1;
+  overflow: hidden;
 }
 
-.hero .article .thumbnail-container::after {
+.hero .thumbnail-container::after {
   content: "";
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
 }
 
-.hero .article > *:not(.thumbnail-container) {
-  z-index: 2;
+.hero .thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
-.hero .article .info {
+.hero .info {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-flow: column nowrap;
   row-gap: 16px;
 }
 
-.hero .article .title {
+.hero .title {
   font-family: "Calluna", serif;
   font-size: 72px;
+  line-height: 1.05;
   width: 75%;
   margin: 0;
 }
 
-.hero .article .date {
-  color: white;
-  text-transform: none;
-}
-
-.hero .article .author-info {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  column-gap: 24px;
-  margin-top: 16px;
-}
-
-.hero .article .author-info .author {
+.hero .author-info .author {
   font-weight: bold;
   margin: 0 0 2px;
 }
 
-/* `#latest` mosaic: one large card, two medium, three small. */
+.hero .author-info .author a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hero .author-info .author a:hover {
+  text-decoration: underline;
+}
+
+/* `#latest` mosaic: one large card beside two stacked columns. */
 .latest-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -291,169 +387,28 @@ body {
   grid-area: a5;
 }
 
-.latest-grid .article:not(:first-child) {
+.heading-container {
+  display: flex;
   flex-flow: row nowrap;
-  column-gap: 32px;
+  align-items: center;
+  column-gap: 12px;
+  font-weight: bold;
 }
 
-.latest-grid .article:nth-child(2) .thumbnail-container,
-.latest-grid .article:nth-child(3) .thumbnail-container {
-  width: 187px;
-  height: 200px;
+.heading-container h3 {
+  font-family: "Calluna", serif;
+  font-size: 48px;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
-.latest-grid .article:nth-child(n + 4) .thumbnail-container {
-  width: 132px;
-  height: 132px;
+.heading-container .line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: black;
 }
 
-.latest-grid .article .authors {
-  margin-top: 0;
-}
-
-@media screen and (max-width: 1200px) {
-  .articles-grid {
-    gap: 32px;
-  }
-  .article .thumbnail-container {
-    height: 172px;
-  }
-  .latest-grid {
-    column-gap: 32px;
-    row-gap: 32px;
-  }
-}
-
-@media screen and (max-width: 992px) {
-  .articles-grid {
-    gap: 28px;
-  }
-  .article .thumbnail-container {
-    height: 148px;
-  }
-
-  .latest-grid {
-    column-gap: 28px;
-    row-gap: 28px;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, auto);
-    grid-template-areas:
-      "a0 a1 a2"
-      "a3 a4 a5";
-  }
-
-  .latest-grid .article {
-    flex-flow: column nowrap;
-  }
-
-  .latest-grid .article .thumbnail-container {
-    width: 100%;
-    height: 148px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .articles-grid {
-    gap: 24px;
-  }
-  .article .thumbnail-container {
-    height: 124px;
-  }
-
-  .latest-grid {
-    column-gap: 24px;
-    row-gap: 24px;
-  }
-  .latest-grid .article .thumbnail-container {
-    height: 124px;
-  }
-
-  .hero .article .title {
-    width: 100%;
-  }
-}
-
-@media screen and (max-width: 576px) {
-  /* Cards turn into horizontal rows with a square thumbnail. */
-  .article {
-    flex-flow: row nowrap;
-    column-gap: 16px;
-  }
-
-  .article .thumbnail-container {
-    width: 100px;
-    height: 100px;
-  }
-
-  .article .title {
-    margin: 0 0 4px;
-  }
-
-  .article .excerpt {
-    display: none;
-  }
-
-  .article .authors,
-  .article .date {
-    display: none;
-  }
-
-  .article .authors-date {
-    display: block;
-    margin: auto 0 0;
-    color: #737373;
-    font-size: 12px;
-    text-transform: uppercase;
-  }
-
-  .articles-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .latest-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(6, auto);
-    grid-template-areas: "a0" "a1" "a2" "a3" "a4" "a5";
-    row-gap: 16px;
-  }
-
-  .latest-grid .article {
-    flex-flow: row nowrap;
-    column-gap: 16px;
-  }
-
-  .latest-grid .article .thumbnail-container {
-    width: 100px;
-    height: 100px;
-  }
-
-  .hero .article {
-    min-height: 400px;
-  }
-
-  .hero .article .title {
-    font-size: 40px;
-  }
-
-  .hero .article .excerpt,
-  .hero .article .authors-date {
-    display: none;
-  }
-
-  .hero .article .date {
-    display: block;
-  }
-
-  .load-more {
-    width: 100%;
-    padding: 12px 40px;
-    font-size: 12px;
-  }
-}
-
-/* Category tabs (`#all-content`). Icons are masked so they can take the
-   category colour when their tab is active. */
+/* Tabs. Icons are masked so they take the category colour when active. */
 .tab-selection {
   display: flex;
   flex-flow: row wrap;
@@ -501,7 +456,65 @@ body {
   background-color: var(--active-color);
 }
 
+/* "Show me more" links through to the category archive. */
+.load-more {
+  background-color: #dddffe;
+  color: #5d61ba;
+  padding: 10px 64px;
+  border-radius: 24px;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.load-more:hover {
+  background-color: #d2d4fe;
+}
+
+@media screen and (max-width: 992px) {
+  .latest-grid {
+    column-gap: 28px;
+    row-gap: 28px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, auto);
+    grid-template-areas:
+      "a0 a1 a2"
+      "a3 a4 a5";
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hero .title {
+    width: 100%;
+  }
+}
+
 @media screen and (max-width: 576px) {
+  .latest-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, auto);
+    grid-template-areas: "a0" "a1" "a2" "a3" "a4" "a5";
+    row-gap: 16px;
+  }
+
+  .hero .article {
+    min-height: 400px;
+  }
+
+  .hero .title {
+    font-size: 40px;
+  }
+
+  .heading-container h3 {
+    font-size: 24px;
+  }
+
   .tab-selection {
     column-gap: 16px;
   }
@@ -509,23 +522,10 @@ body {
   .tab-selection button {
     font-size: 14px;
   }
-}
 
-/* Section headings are Calluna, matching the theme's h3 scale. */
-.heading-container h3 {
-  font-family: "Calluna", serif;
-  font-size: 48px;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-/* `.load-more` is an anchor to the category archive, not a pagination button. */
-.load-more {
-  text-decoration: none;
-}
-
-@media screen and (max-width: 576px) {
-  .heading-container h3 {
-    font-size: 24px;
+  .load-more {
+    width: 100%;
+    padding: 12px 40px;
+    font-size: 12px;
   }
 }

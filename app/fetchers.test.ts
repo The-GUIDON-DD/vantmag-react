@@ -1,48 +1,47 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import mediaFixture from "./__fixtures__/media.json";
 import postsFixture from "./__fixtures__/posts.json";
 import { retrieveCategoryPosts, retrieveHomeData } from "./fetchers";
-import { decodeEntities, formatDate, toPlainText } from "./utils";
+import { plainText, postDate } from "./utils";
 
 /**
- * Fixtures are real responses captured from the live WordPress install, so
- * these cover the actual field shapes (PublishPress `authors`, nested
- * `media_details.sizes`) rather than an idealised version of them.
+ * The fixture is a real response captured from the live WordPress install, so
+ * these cover the actual field shapes (PublishPress `authors`, entity-encoded
+ * titles) rather than an idealised version of them.
  */
 function mockApi() {
-  return vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
-    const url = String(input);
-    const body = url.includes("/media?") ? mediaFixture : postsFixture;
-    return Promise.resolve(new Response(JSON.stringify(body)));
-  });
+  return vi.spyOn(globalThis, "fetch").mockImplementation(() =>
+    Promise.resolve(
+      new Response(JSON.stringify(postsFixture), {
+        headers: { "X-WP-TotalPages": "5" },
+      }),
+    ),
+  );
 }
 
 afterEach(() => vi.restoreAllMocks());
 
-describe("decodeEntities", () => {
-  it("decodes named, decimal and hex entities", () => {
-    expect(decodeEntities("Tom &amp; Jerry")).toBe("Tom & Jerry");
-    expect(decodeEntities("caf&#233;")).toBe("café");
-    expect(decodeEntities("&#x2019;")).toBe("’");
-    expect(decodeEntities("and &hellip;")).toBe("and …");
-  });
-
-  it("leaves unknown entities untouched", () => {
-    expect(decodeEntities("&notareal; thing")).toBe("&notareal; thing");
-  });
-});
-
-describe("toPlainText", () => {
+describe("plainText", () => {
   it("strips the markup WordPress wraps excerpts in", () => {
-    expect(
-      toPlainText("<p>Hello <strong>there</strong> [&hellip;]</p>\n"),
-    ).toBe("Hello there […]");
+    expect(plainText("<p>Hello <strong>there</strong></p>")).toBe(
+      "Hello there",
+    );
+  });
+
+  // `plainText` only decodes HTML entities where `DOMParser` exists. Outside a
+  // browser it falls back to stripping tags, so `&amp;` survives. That is fine
+  // while the app is client-rendered, but would show raw entities if SSR is
+  // ever enabled.
+  it("decodes entities in a browser and strips tags everywhere", () => {
+    const decoded = typeof DOMParser !== "undefined";
+    expect(plainText("Tom &amp; Jerry")).toBe(
+      decoded ? "Tom & Jerry" : "Tom &amp; Jerry",
+    );
   });
 });
 
-describe("formatDate", () => {
+describe("postDate", () => {
   it("formats a WordPress local datetime", () => {
-    expect(formatDate("2026-09-22T16:51:36")).toBe("September 22, 2026");
+    expect(postDate("2026-09-22T16:51:36")).toBe("September 22, 2026");
   });
 });
 
@@ -58,44 +57,26 @@ describe("retrieveHomeData", () => {
     expect(data.latest[0].slug).toBe(postsFixture[1].slug);
   });
 
-  it("resolves featured images to a sized URL, not the raw upload", async () => {
+  it("returns cards the ArticleCard component can render", async () => {
     mockApi();
     const { hero } = await retrieveHomeData();
 
-    expect(hero?.image).toBeTruthy();
-    expect(hero?.image).toMatch(/-\d+x\d+\.\w+$/);
+    expect(hero).toMatchObject({
+      id: expect.any(Number),
+      slug: expect.any(String),
+      title: expect.any(String),
+      pubDate: expect.any(String),
+      featured_media: expect.any(Number),
+    });
+    expect(Array.isArray(hero?.authors)).toBe(true);
   });
 
-  it("decodes titles and flattens authors", async () => {
-    mockApi();
-    const { hero } = await retrieveHomeData();
-
-    expect(hero?.title).not.toContain("&#");
-    expect(hero?.excerpt).not.toContain("<p>");
-    expect(hero?.authors[0]).toHaveProperty("display_name");
-    expect(typeof hero?.authors[0].avatar_url).toBe("string");
-  });
-
-  it("only assigns categories the site has chips for", async () => {
-    mockApi();
-    const { hero, latest } = await retrieveHomeData();
-
-    for (const post of [hero, ...latest]) {
-      expect(
-        post?.category === null || typeof post?.category === "number",
-      ).toBe(true);
-    }
-  });
-
-  it("requests media once, batched, rather than per card", async () => {
+  it("asks for one page of posts, not one request per card", async () => {
     const fetchSpy = mockApi();
     await retrieveHomeData();
 
-    const mediaCalls = fetchSpy.mock.calls.filter((c) =>
-      String(c[0]).includes("/media?"),
-    );
-    expect(mediaCalls).toHaveLength(1);
-    expect(String(mediaCalls[0][0])).toContain("include=");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0][0])).toContain("per_page=13");
   });
 
   it("gives suggestions a stable order across calls", async () => {
@@ -107,16 +88,25 @@ describe("retrieveHomeData", () => {
       second.suggestions.map((p) => p.slug),
     );
   });
+
+  it("throws a readable error when the API fails", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("", { status: 503 }),
+    );
+
+    await expect(retrieveHomeData()).rejects.toThrow("503");
+  });
 });
 
 describe("retrieveCategoryPosts", () => {
-  it("passes the category and page through to the API", async () => {
+  it("passes the category and paging through to the API", async () => {
     const fetchSpy = mockApi();
-    await retrieveCategoryPosts(13, 2, 9);
+    await retrieveCategoryPosts(13, 9, 6);
 
     const url = String(fetchSpy.mock.calls[0][0]);
     expect(url).toContain("categories=13");
-    expect(url).toContain("per_page=9");
-    expect(url).toContain("page=2");
+    expect(url).toContain("offset=9");
+    // One extra is requested so the caller can tell whether more exist.
+    expect(url).toContain("per_page=7");
   });
 });

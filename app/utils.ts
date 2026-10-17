@@ -1,5 +1,45 @@
 import type { ArticleData } from "./types";
 
+export function plainText(html: string) {
+  if (typeof DOMParser === "undefined") {
+    return html.replace(/<[^>]*>/g, "");
+  }
+
+  const document = new DOMParser().parseFromString(html, "text/html");
+  return document.body.textContent?.trim() ?? "";
+}
+
+export function postDate(date: string) {
+  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+export function parseImage(html: string | null) {
+  if (!html || typeof DOMParser === "undefined") return null;
+
+  const image = new DOMParser()
+    .parseFromString(html, "text/html")
+    .querySelector("img");
+  const src = image?.getAttribute("src");
+  if (!image || !src) return null;
+
+  return {
+    src,
+    srcSet: image.getAttribute("srcset") || undefined,
+    sizes: image.getAttribute("sizes") || undefined,
+    alt: image.getAttribute("alt") || "",
+    loading:
+      image.getAttribute("loading") === "lazy"
+        ? ("lazy" as const)
+        : ("eager" as const),
+  };
+}
+
 export function getSocMedUrlsFromArticle(article: ArticleData) {
   return {
     facebook: `https://www.facebook.com/sharer.php?u=https://vantage.theguidon.com/${article.slug}`,
@@ -8,61 +48,11 @@ export function getSocMedUrlsFromArticle(article: ArticleData) {
   };
 }
 
-const NAMED_ENTITIES: Record<string, string> = {
-  amp: "&",
-  lt: "<",
-  gt: ">",
-  quot: '"',
-  apos: "'",
-  nbsp: " ",
-  hellip: "…",
-  mdash: "—",
-  ndash: "–",
-  lsquo: "‘",
-  rsquo: "’",
-  ldquo: "“",
-  rdquo: "”",
-};
-
-/**
- * Decodes the HTML entities WordPress leaves in `rendered` strings. Written as a
- * pure function rather than a DOM round-trip so it keeps working if SSR is
- * turned on later.
- */
-export function decodeEntities(text: string) {
-  return text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, code: string) => {
-    if (code[0] === "#") {
-      const point =
-        code[1] === "x" || code[1] === "X"
-          ? Number.parseInt(code.slice(2), 16)
-          : Number.parseInt(code.slice(1), 10);
-      return Number.isNaN(point) ? match : String.fromCodePoint(point);
-    }
-    return NAMED_ENTITIES[code.toLowerCase()] ?? match;
-  });
-}
-
-/** Turns a WordPress `rendered` field into plain text for cards. */
-export function toPlainText(html: string) {
-  return decodeEntities(html.replace(/<[^>]*>/g, "")).trim();
-}
-
-export function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDate(date: Date) {
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(new Date(date));
-}
-
-/**
- * Renders a byline the way the theme does: "A", "A and B", "A, B, and C".
- * Plain text — `Bylines` is the linked equivalent used on the article page.
- */
-export function formatAuthors(authors: { display_name: string }[]) {
-  const names = authors.map((a) => a.display_name);
-  if (names.length === 0) return "";
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+  }).format(date);
+  return formattedDate;
 }

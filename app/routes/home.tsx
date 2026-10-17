@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import type { CSSProperties } from "react";
 import ArticleCard from "~/components/article-card";
 import CategoryTabs from "~/components/category-tabs";
 import Hero from "~/components/hero";
 import SectionHeading from "~/components/section-heading";
 import { retrieveHomeData } from "~/fetchers";
+import type { ArticleCardData } from "~/types";
+import { categories } from "../../constants";
 
 export function meta() {
   return [
@@ -16,18 +19,8 @@ export function meta() {
   ];
 }
 
-function HomeSkeleton() {
-  return (
-    <div className="px-4 md:px-16 py-10 flex flex-col gap-10">
-      <div className="loading-anim h-100 rounded" />
-      <div className="articles-grid">
-        {Array.from({ length: 6 }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton
-          <div key={i} className="loading-anim h-50 rounded" />
-        ))}
-      </div>
-    </div>
-  );
+function categoryOf(post: ArticleCardData) {
+  return Object.values(categories).find(({ id }) => id === post.category);
 }
 
 export default function Home() {
@@ -36,37 +29,60 @@ export default function Home() {
     queryFn: retrieveHomeData,
   });
 
-  if (isPending) return <HomeSkeleton />;
+  if (isPending) {
+    return <p className="p-8">Loading articles...</p>;
+  }
 
-  if (isError || !data?.hero) {
-    if (error) console.error("Failed to load home data:", error);
-
+  if (isError || !data.hero) {
     return (
-      <main className="px-4 md:px-16 py-20 text-center">
-        <h1 className="font-display text-4xl mb-4">Something went wrong</h1>
-        <p className="text-gray-600">
-          We couldn't load the latest stories. Please try again later.
+      <main className="mx-auto w-full max-w-[1240px] px-4 py-20 text-center">
+        <h1 className="mb-4 font-display text-4xl">Something went wrong</h1>
+        <p role="alert" className="text-gray-600">
+          We couldn't load the latest stories. Please try again.{" "}
+          {error?.message}
         </p>
       </main>
     );
   }
 
+  // Tint each card's hover with its own category colour, the way the category
+  // page does.
+  const highlight = (post: ArticleCardData) =>
+    ({
+      "--category-article-highlight": `color-mix(in srgb, ${
+        categoryOf(post)?.color ?? "#5d61ba"
+      } 18%, white)`,
+    }) as CSSProperties;
+
   return (
     <main id="index" className="w-full">
       <Hero post={data.hero} />
 
-      <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-7 md:px-10 lg:px-13 xl:px-16">
+      <div className="mx-auto w-full max-w-[1240px] px-4 lg:w-[90%] lg:px-5">
         <section className="latest-grid mb-20">
           {data.latest.map((post, ix) => (
-            <ArticleCard key={post.slug} post={post} showExcerpt={ix === 0} />
+            <div key={post.id} style={highlight(post)}>
+              <ArticleCard
+                post={post}
+                category={categoryOf(post)}
+                variant={ix === 0 ? "featured" : "row"}
+                showExcerpt={ix === 0}
+              />
+            </div>
           ))}
         </section>
 
         <section className="mb-20">
           <SectionHeading>Here is something for you.</SectionHeading>
-          <div className="articles-grid">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {data.suggestions.map((post) => (
-              <ArticleCard key={post.slug} post={post} />
+              <div key={post.id} style={highlight(post)}>
+                <ArticleCard
+                  post={post}
+                  category={categoryOf(post)}
+                  variant="grid"
+                />
+              </div>
             ))}
           </div>
         </section>

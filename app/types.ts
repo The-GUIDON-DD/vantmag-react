@@ -1,37 +1,53 @@
 export const BASE_URL = "https://vantage.theguidon.com/wp-json/wp/v2";
 
 export interface Author {
+  id: number;
   slug: string;
   display_name: string;
-  avatar_url?: string;
 }
 
 export interface ArticleData {
+  id: number;
   title: string;
   slug: string;
-  authors: Author[];
-  featured_image: number;
+  authors?: Author[];
+  featured_media: number;
   category: number;
   pubDate: string;
   excerpt: string;
   content: string;
 }
 
-/** A post as rendered by `ArticleCard` — everything a card needs, flattened. */
-export interface PostCard {
-  slug: string;
+export type ArticleCardData = Omit<ArticleData, "content">;
+
+// export interface ArticleCardPost {
+//   id: number;
+//   date: string;
+//   link: string;
+//   slug: string;
+//   title: { rendered: string };
+//   excerpt: { rendered: string };
+//   featured_media: number;
+//   authors?: Author[];
+// }
+
+export type CategoryDetails = {
+  id: number;
   title: string;
-  excerpt: string;
-  authors: Author[];
-  /** First category id that appears in `constants.ts`, or null. */
-  category: number | null;
-  pubDate: string;
-  image: string | null;
-  imageAlt: string;
+  path: string;
+  icon: string;
+  color: string;
+  description: string;
+  descriptionColor: string;
+};
+
+export interface CategoryPostsPage {
+  posts: ArticleCardData[];
+  hasMore: boolean;
 }
 
 export interface HomeData {
-  hero: PostCard | null;
-  latest: PostCard[];
-  suggestions: PostCard[];
+  hero: ArticleCardData | null;
+  latest: ArticleCardData[];
+  suggestions: ArticleCardData[];
 }
