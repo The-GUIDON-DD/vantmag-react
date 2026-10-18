@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import parse from "html-react-parser";
+import parse, { Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { FaFacebook, FaXTwitter } from "react-icons/fa6";
 import ArticleCard from "~/components/article-card";
@@ -17,9 +17,42 @@ import type { Route } from "./+types/article";
 
 function SanitizedContent({ html }: { html: string }) {
   const cleanHTML = DOMPurify.sanitize(html);
+
+  // NOTE: <script> tag for Opinion Stage does not work because of
+  // HTML sanitization so replace the Opinion Stage widget with an
+  // iframe embedding the actual quiz
+
+  const reactNodes = parse(cleanHTML, {
+    replace: (domNode) => {
+      if (
+        domNode instanceof Element &&
+        domNode.attribs &&
+        "data-opinionstage-widget" in domNode.attribs
+      ) {
+        console.log("element captured");
+        const widgetID = domNode.attribs["data-opinionstage-widget"];
+        return (
+          <div className="wp-opinionstage-quiz w-full my-6 flex justify-center">
+            <iframe
+              title="Opinion Stage Quiz"
+              name="opinionstage-widget"
+              src={`https://www.opinionstage.com/api/v2/widgets/${widgetID}/iframe?em=1`}
+              data-opinionstage-iframe={widgetID}
+              width="100%"
+              height="800"
+              className="border-none shadow-lg rounded-xl wp-opinionstage-quiz"
+              allow="fullscreen"
+              loading="lazy"
+            ></iframe>
+          </div>
+        );
+      }
+    },
+  });
+
   return (
     <section className="w-full bg-white px-6 lg:px-[20%] py-10 flex flex-col gap-8 text-black text-md lg:text-lg">
-      {parse(cleanHTML)}
+      {reactNodes}
     </section>
   );
 }
