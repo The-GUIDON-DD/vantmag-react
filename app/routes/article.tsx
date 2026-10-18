@@ -29,7 +29,6 @@ function SanitizedContent({ html }: { html: string }) {
         domNode.attribs &&
         "data-opinionstage-widget" in domNode.attribs
       ) {
-        console.log("element captured");
         const widgetID = domNode.attribs["data-opinionstage-widget"];
         return (
           <div className="wp-opinionstage-quiz w-full my-6 flex justify-center">
