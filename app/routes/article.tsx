@@ -16,7 +16,9 @@ import { categories } from "../../constants";
 import type { Route } from "./+types/article";
 
 function SanitizedContent({ html }: { html: string }) {
-  const cleanHTML = DOMPurify.sanitize(html);
+  const cleanHTML = DOMPurify.sanitize(html, {
+    ADD_ATTR: ["data-opinionstage-widget"], // whitelist opinion stage quizzes (UPDATE IF API CHANGES)
+  });
 
   // NOTE: <script> tag for Opinion Stage does not work because of
   // HTML sanitization so replace the Opinion Stage widget with an
