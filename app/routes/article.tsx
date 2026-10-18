@@ -143,10 +143,7 @@ export default function Article({ params }: Route.ComponentProps) {
               </section>
             </section>
           </section>
-          <section
-            className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured"
-            // biome-ignore lint: needed to embed content from WordPress API
-          >
+          <section className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured">
             <img
               alt="Vantage Magazine"
               src="/default_image.webp"
@@ -171,7 +168,7 @@ export default function Article({ params }: Route.ComponentProps) {
         </section>
         <section className="w-full min-h-fit mb-15 px-6 lg:px-[20%] grid grid-cols-3 gap-4">
           {relatedArticles &&
-            relatedArticles.map((article) => (
+            relatedArticles?.map((article) => (
               <ArticleCard
                 key={article.id}
                 post={article}
