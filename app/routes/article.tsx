@@ -6,6 +6,7 @@ import ArticleCard from "~/components/article-card";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Spinner } from "~/components/ui/spinner";
 import {
   retrieveArticleFromSlug,
   retrieveMediaFromID,
@@ -167,6 +168,16 @@ export default function Article({ params }: Route.ComponentProps) {
           <div className="h-0 grow w-full border-black border-t" />
         </section>
         <section className="w-full min-h-fit mb-15 px-6 lg:px-[20%] grid grid-cols-3 gap-4">
+          {isRelatedPending && (
+            <div className="w-full col-span-3 flex justify-center">
+              <Spinner />
+            </div>
+          )}
+          {isRelatedError && (
+            <div className="w-full col-span-3 flex justify-center">
+              <p>Failed to fetch articles.</p>
+            </div>
+          )}
           {relatedArticles &&
             relatedArticles?.map((article) => (
               <ArticleCard
