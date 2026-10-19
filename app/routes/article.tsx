@@ -174,7 +174,7 @@ export default function Article({ params }: Route.ComponentProps) {
             </div>
           )}
           {isRelatedError && (
-            <div className="w-full col-span-3 flex justify center">
+            <div className="w-full col-span-3 flex justify-center">
               <p>Failed to fetch articles.</p>
             </div>
           )}
