@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import type { CategoryDetails } from "~/types";
 import { categories, page_size_values } from "../../constants";
 import ArticleCard from "../components/article-card";
+import ShowMore from "../components/show-more";
 import { retrieveCategoryPosts } from "../fetchers";
 import type { Route } from "./+types/category";
 
@@ -113,16 +114,10 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
       )}
 
       {hasNextPage && (
-        <div className="mt-14 text-center">
-          <button
-            type="button"
-            onClick={() => void fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="rounded-full bg-[#dddffe] px-16 py-2.5 text-sm font-bold uppercase text-vant-purple hover:bg-[#cdd0ff] disabled:opacity-60"
-          >
-            {isFetchingNextPage ? "Loading…" : "Show me more"}
-          </button>
-        </div>
+        <ShowMore
+          onClick={() => void fetchNextPage()}
+          isLoading={isFetchingNextPage}
+        />
       )}
       {isFetchNextPageError && (
         <p role="alert" className="mt-4 text-center text-red-700">
