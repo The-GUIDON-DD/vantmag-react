@@ -43,7 +43,7 @@ export default function PageNotFound() {
           <p>Failed to load featured articles. {JSON.stringify(error)}</p>
         )}
         {data && (
-          <section className="w-full min-h-fit grid grid-cols-3 gap-4">
+          <section className="w-full min-h-fit grid grid-cols-3 gap-6">
             {data?.map((article) => (
               <ArticleCard
                 key={article.id}
