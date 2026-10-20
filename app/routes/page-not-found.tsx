@@ -6,7 +6,7 @@ import { retrieveRandomFeaturedPosts } from "~/fetchers";
 import { categoryFromID } from "~/utils";
 
 export default function PageNotFound() {
-  const { isPending, isError, error, data } = useQuery({
+  const { isPending, isError, data } = useQuery({
     queryKey: ["featured"],
     queryFn: retrieveRandomFeaturedPosts,
   });
@@ -39,9 +39,7 @@ export default function PageNotFound() {
             <Spinner className="size-5" />
           </div>
         )}
-        {isError && (
-          <p>Failed to load featured articles. {JSON.stringify(error)}</p>
-        )}
+        {isError && <p>Failed to load featured articles.</p>}
         {data && (
           <section className="w-full min-h-fit grid grid-cols-3 gap-6">
             {data?.map((article) => (
