@@ -1,3 +1,5 @@
+import SearchBar from "~/components/searchbar";
+
 export default function PageNotFound() {
   return (
     <main className="w-full px-6 lg:px-[10%] pt-10 py-15 flex flex-col gap-10 items-stretch">
@@ -17,6 +19,7 @@ export default function PageNotFound() {
         <h1 className="font-display text-3xl font-bold whitespace-nowrap">
           Try searching for it again:
         </h1>
+        <SearchBar width={"100%"} variant="page" />
       </section>
       <section className="flex flex-col items-stretch gap-2">
         <h1 className="font-display text-3xl font-bold whitespace-nowrap">
