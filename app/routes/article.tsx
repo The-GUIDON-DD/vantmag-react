@@ -12,7 +12,7 @@ import {
   retrieveMediaFromID,
   retrieveRelatedArticles,
 } from "~/fetchers";
-import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
+import { categoryFromID, getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
 
@@ -183,7 +183,7 @@ export default function Article({ params }: Route.ComponentProps) {
               <ArticleCard
                 key={article.id}
                 post={article}
-                category={categories[0]}
+                category={categoryFromID(article.category)}
                 variant="grid"
                 showCategory={false}
               />

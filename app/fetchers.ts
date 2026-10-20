@@ -260,6 +260,7 @@ export async function retrieveRandomFeaturedPosts(): Promise<
     "slug",
     "date",
     "title.rendered",
+    "excerpt.rendered",
     "categories",
     "authors",
     "featured_media",
