@@ -12,9 +12,10 @@ import {
   retrieveMediaFromID,
   retrieveRelatedArticles,
 } from "~/fetchers";
-import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
+import { categoryFromID, getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
+import PageNotFound from "./page-not-found";
 
 function SanitizedContent({ html }: { html: string }) {
   const cleanHTML = DOMPurify.sanitize(html, {
@@ -61,7 +62,7 @@ function SanitizedContent({ html }: { html: string }) {
 
 export default function Article({ params }: Route.ComponentProps) {
   const { slug } = params;
-  const { isPending, isError, data, error } = useQuery({
+  const { isPending, isError, data } = useQuery({
     queryKey: [slug],
     queryFn: () => retrieveArticleFromSlug(slug),
   });
@@ -109,7 +110,7 @@ export default function Article({ params }: Route.ComponentProps) {
       </div>
     );
   } else if (isError) {
-    return <div>Error: {JSON.stringify(error)}</div>;
+    return <PageNotFound />;
   } else {
     const category = Object.values(categories).find(
       ({ id }) => data.category === id,
@@ -183,7 +184,7 @@ export default function Article({ params }: Route.ComponentProps) {
               <ArticleCard
                 key={article.id}
                 post={article}
-                category={categories[0]}
+                category={categoryFromID(article.category)}
                 variant="grid"
                 showCategory={false}
               />

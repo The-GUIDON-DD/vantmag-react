@@ -251,3 +251,32 @@ export async function retrieveArticlesFromAuthor(
     hasMore: offset < totalPages - 1,
   };
 }
+
+export async function retrieveRandomFeaturedPosts(): Promise<
+  Array<ArticleCardData>
+> {
+  const fields = [
+    "id",
+    "slug",
+    "date",
+    "title.rendered",
+    "excerpt.rendered",
+    "categories",
+    "authors",
+    "featured_media",
+  ];
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("per_page", "10");
+  url.searchParams.set("_fields", fields.map(encodeURIComponent).join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  const posts = parsedData.map(categoryPostResponseToArticleCardPost);
+
+  // should be fine since it's just 10 elements.
+  // https://stackoverflow.com/questions/19269545/how-to-get-a-number-of-random-elements-from-an-array
+  return [...posts].sort(() => 0.5 - Math.random()).slice(0, 3);
+}
