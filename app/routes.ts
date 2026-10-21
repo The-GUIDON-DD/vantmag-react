@@ -12,5 +12,6 @@ export default [
     route("category/:slug", "./routes/category.tsx"),
     route("/:slug", "./routes/article.tsx"),
     route("/author/:slug", "./routes/author.tsx"),
+    route("*", "./routes/page-not-found.tsx"),
   ]),
 ] satisfies RouteConfig;

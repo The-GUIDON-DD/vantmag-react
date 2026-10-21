@@ -1,32 +1,68 @@
 import { useQuery } from "@tanstack/react-query";
-import parse from "html-react-parser";
+import parse, { Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { FaFacebook, FaXTwitter } from "react-icons/fa6";
 import ArticleCard from "~/components/article-card";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Spinner } from "~/components/ui/spinner";
 import {
   retrieveArticleFromSlug,
   retrieveMediaFromID,
   retrieveRelatedArticles,
 } from "~/fetchers";
-import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
+import { categoryFromID, getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
+import PageNotFound from "./page-not-found";
 
 function SanitizedContent({ html }: { html: string }) {
-  const cleanHTML = DOMPurify.sanitize(html);
+  const cleanHTML = DOMPurify.sanitize(html, {
+    ADD_ATTR: ["data-opinionstage-widget"], // whitelist opinion stage quizzes (UPDATE IF API CHANGES)
+  });
+
+  // NOTE: <script> tag for Opinion Stage does not work because of
+  // HTML sanitization so replace the Opinion Stage widget with an
+  // iframe embedding the actual quiz
+
+  const reactNodes = parse(cleanHTML, {
+    replace: (domNode) => {
+      if (
+        domNode instanceof Element &&
+        domNode.attribs &&
+        "data-opinionstage-widget" in domNode.attribs
+      ) {
+        const widgetID = domNode.attribs["data-opinionstage-widget"];
+        return (
+          <div className="wp-opinionstage-quiz w-full my-6 flex justify-center">
+            <iframe
+              title="Opinion Stage Quiz"
+              name="opinionstage-widget"
+              src={`https://www.opinionstage.com/api/v2/widgets/${widgetID}/iframe?em=1`}
+              data-opinionstage-iframe={widgetID}
+              width="100%"
+              height="800"
+              className="border-none shadow-lg rounded-xl wp-opinionstage-quiz"
+              allow="fullscreen"
+              loading="lazy"
+            ></iframe>
+          </div>
+        );
+      }
+    },
+  });
+
   return (
     <section className="w-full bg-white px-6 lg:px-[20%] py-10 flex flex-col gap-8 text-black text-md lg:text-lg">
-      {parse(cleanHTML)}
+      {reactNodes}
     </section>
   );
 }
 
 export default function Article({ params }: Route.ComponentProps) {
   const { slug } = params;
-  const { isPending, isError, data, error } = useQuery({
+  const { isPending, isError, data } = useQuery({
     queryKey: [slug],
     queryFn: () => retrieveArticleFromSlug(slug),
   });
@@ -74,7 +110,7 @@ export default function Article({ params }: Route.ComponentProps) {
       </div>
     );
   } else if (isError) {
-    return <div>Error: {JSON.stringify(error)}</div>;
+    return <PageNotFound />;
   } else {
     const category = Object.values(categories).find(
       ({ id }) => data.category === id,
@@ -109,10 +145,7 @@ export default function Article({ params }: Route.ComponentProps) {
               </section>
             </section>
           </section>
-          <section
-            className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured"
-            // biome-ignore lint: needed to embed content from WordPress API
-          >
+          <section className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured">
             <img
               alt="Vantage Magazine"
               src="/default_image.webp"
@@ -136,12 +169,22 @@ export default function Article({ params }: Route.ComponentProps) {
           <div className="h-0 grow w-full border-black border-t" />
         </section>
         <section className="w-full min-h-fit mb-15 px-6 lg:px-[20%] grid grid-cols-3 gap-4">
+          {isRelatedPending && (
+            <div className="w-full col-span-3 flex justify-center">
+              <Spinner />
+            </div>
+          )}
+          {isRelatedError && (
+            <div className="w-full col-span-3 flex justify-center">
+              <p>Failed to fetch articles.</p>
+            </div>
+          )}
           {relatedArticles &&
-            relatedArticles.map((article) => (
+            relatedArticles?.map((article) => (
               <ArticleCard
                 key={article.id}
                 post={article}
-                category={categories[0]}
+                category={categoryFromID(article.category)}
                 variant="grid"
                 showCategory={false}
               />

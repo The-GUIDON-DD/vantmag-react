@@ -35,10 +35,11 @@ export type CategoryDetails = {
   id: number;
   title: string;
   path: string;
-  icon: string;
+  icon?: string;
   color: string;
-  description: string;
+  description?: string;
   descriptionColor: string;
+  hiddenFromNavigation?: boolean;
 };
 
 export interface CategoryPostsPage {

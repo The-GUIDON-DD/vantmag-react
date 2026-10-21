@@ -40,6 +40,13 @@ const CategoryPostSchema = ArticleSchema.omit({
   content: true,
 });
 
+const TagSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+type TagResponse = z.infer<typeof TagSchema>;
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
@@ -255,16 +262,17 @@ export async function retrieveArticlesFromAuthor(
   };
 }
 
-const TagSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  slug: z.string(),
-});
-
-type TagResponse = z.infer<typeof TagSchema>;
-
-const SEARCH_POST_FIELDS =
-  "id,date,categories,link,slug,title,excerpt,authors,featured_media";
+const SEARCH_POST_FIELDS = [
+  "id",
+  "date",
+  "categories",
+  "link",
+  "slug",
+  "title",
+  "excerpt",
+  "authors",
+  "featured_media",
+];
 
 export async function retrieveArticlesFromSearch(
   term: string,
@@ -279,7 +287,7 @@ export async function retrieveArticlesFromSearch(
   // Request one extra post to know if there are more results without
   // risking an out-of-range page error from WordPress.
   url.searchParams.set("per_page", String(pageSize + 1));
-  url.searchParams.set("_fields", SEARCH_POST_FIELDS);
+  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -314,6 +322,10 @@ export async function retrieveTagsFromSearch(
   return TagSchema.array().parse(await response.json());
 }
 
+/* Note from Cheska: good work, but I will try to make a custom REST endpoint
+ * that retrieves random posts instead so that we will not have to make
+ * two API Calls given it's fairly slow to call the REST API multiple times... */
+
 // The original site shows random posts when a search has no results. The REST
 // API has no random order, so read the post count and start at a random offset.
 export async function retrieveFeaturedPosts(
@@ -331,7 +343,7 @@ export async function retrieveFeaturedPosts(
     String(Math.floor(Math.random() * Math.max(total - count, 0))),
   );
   url.searchParams.set("per_page", String(count));
-  url.searchParams.set("_fields", SEARCH_POST_FIELDS);
+  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
 
   const data = await fetch(url).then((res) => res.json());
   const parsedData: CategoryPostResponse[] =
