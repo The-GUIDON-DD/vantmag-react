@@ -55,7 +55,6 @@ root.render(<RouterProvider router={router} />);
 ```
 
 Look for route object arrays and APIs such as:
-
 - `createBrowserRouter`
 - `createHashRouter`
 - `createMemoryRouter`
@@ -77,7 +76,6 @@ react-router/docs/start/data/route-object.md
 ```
 
 Rules:
-
 - Keep route objects outside render when possible.
 - Use nested routes for shared layouts and data boundaries.
 - Use index routes for default child content.
@@ -94,7 +92,6 @@ react-router/docs/start/data/actions.md
 ```
 
 Rules:
-
 - Load route data with route `loader` functions.
 - Mutate route data with route `action` functions.
 - Prefer loaders/actions over route-level `useEffect` fetching.
@@ -102,7 +99,6 @@ Rules:
 - Let React Router revalidate after actions unless there is a documented reason to customize revalidation.
 
 Common patterns:
-
 - Validation failure from an action: return `data({ errors, values }, { status: 400 })`, then render errors with `useActionData()` or `fetcher.data`.
 - Missing record in a loader: throw `data("Not Found", { status: 404 })` and render the route `ErrorBoundary`.
 - Search/filter data: parse `new URL(request.url).searchParams` in the loader so the URL is shareable and bookmarkable.
@@ -119,7 +115,6 @@ react-router/docs/explanation/form-vs-fetcher.md
 ```
 
 Rules of thumb:
-
 - Search/filter form that updates the URL: `<Form method="get">`.
 - Mutation that should change URL/history or redirect after completion: `<Form method="post">`.
 - Mutation that should keep the user on the same page: `useFetcher` / `<fetcher.Form>`.
@@ -136,7 +131,6 @@ react-router/docs/explanation/location.md
 ```
 
 Rules:
-
 - Use `<Link>`/`<NavLink>` for user-initiated internal navigation.
 - Use `redirect` in loaders/actions when navigation follows data loading or mutations.
 - Use `useNavigate` for imperative client-side event navigation.

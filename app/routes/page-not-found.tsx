@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import ArticleCard from "~/components/article-card";
 import SearchBar from "~/components/searchbar";
 import { Spinner } from "~/components/ui/spinner";
-import { retrieveRandomFeaturedPosts } from "~/fetchers";
+import { retrieveFeaturedPosts } from "~/fetchers";
 import { categoryFromID } from "~/utils";
 
 export default function PageNotFound() {
   const { isPending, isError, data } = useQuery({
     queryKey: ["featured"],
-    queryFn: retrieveRandomFeaturedPosts,
+    queryFn: () => retrieveFeaturedPosts(3),
   });
   return (
     <main className="w-full px-6 lg:px-[10%] pt-10 py-15 flex flex-col gap-10 items-stretch">

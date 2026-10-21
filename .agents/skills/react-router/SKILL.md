@@ -1,4 +1,5 @@
 ---
+
 name: react-router
 description: Build applications with React Router in Framework, Data, Declarative, and unstable RSC modes. Use when configuring routes, route modules, loaders, actions, forms, fetchers, navigation, pending UI, SSR/SPA/pre-rendering, middleware, URL params/search params, or React Router upgrades.
 license: MIT
@@ -15,7 +16,6 @@ Do not apply Framework/Data patterns to a Declarative app unless you are intenti
 ### Framework Mode
 
 Use Framework Mode guidance when you see:
-
 - `@react-router/dev` in dependencies
 - `react-router.config.ts`
 - `app/routes.ts`
@@ -32,7 +32,6 @@ Then read `references/framework-mode.md`.
 ### Data Mode
 
 Use Data Mode guidance when you see:
-
 - `createBrowserRouter`, `createHashRouter`, `createMemoryRouter`, or `createStaticRouter`
 - `<RouterProvider router={router}>`
 - route objects with properties like `path`, `children`, `loader`, `action`, `Component`, `ErrorBoundary`, or `lazy`
@@ -43,7 +42,6 @@ Then read `references/data-mode.md`.
 ### Declarative Mode
 
 Use Declarative Mode guidance when you see:
-
 - `<BrowserRouter>`, `<HashRouter>`, or `<MemoryRouter>`
 - `<Routes>` and `<Route>` JSX route configuration
 - route components passed with `element={<Component />}`
@@ -54,7 +52,6 @@ Then read `references/declarative-mode.md`.
 ### RSC Framework and RSC Data Modes
 
 React Server Components support is unstable and exists in both Framework and Data variants. Use RSC guidance when you see:
-
 - `unstable_reactRouterRSC`
 - `@vitejs/plugin-rsc`
 - `unstable_RSCRouteConfig`
