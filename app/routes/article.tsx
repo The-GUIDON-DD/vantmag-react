@@ -179,16 +179,15 @@ export default function Article({ params }: Route.ComponentProps) {
               <p>Failed to fetch articles.</p>
             </div>
           )}
-          {relatedArticles &&
-            relatedArticles?.map((article) => (
-              <ArticleCard
-                key={article.id}
-                post={article}
-                category={categoryFromID(article.category)}
-                variant="grid"
-                showCategory={false}
-              />
-            ))}
+          {relatedArticles?.map((article) => (
+            <ArticleCard
+              key={article.id}
+              post={article}
+              category={categoryFromID(article.category)}
+              variant="grid"
+              showCategory={false}
+            />
+          ))}
         </section>
       </main>
     );

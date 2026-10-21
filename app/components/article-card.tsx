@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { retrieveMediaFromID } from "../fetchers";
 import type { ArticleCardData, CategoryDetails } from "../types";
-import { parseImage, plainText, postDate } from "../utils";
+import { parseImage, plainText } from "../utils";
 import Bylines from "./bylines";
 import Chip from "./chip";
 
