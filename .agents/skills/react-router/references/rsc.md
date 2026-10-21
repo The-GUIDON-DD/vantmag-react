@@ -1,7 +1,6 @@
 # React Server Components (RSC)
 
 React Router's RSC support is unstable and exists in two variants:
-
 - **RSC Framework Mode**: Framework Mode with the unstable RSC Vite plugin.
 - **RSC Data Mode**: lower-level RSC runtime APIs and manual bundler/server integration.
 
@@ -27,7 +26,6 @@ RSC docs may describe differences from non-RSC mode rather than repeating every 
 ## Detect RSC Framework Mode
 
 Look for:
-
 - `unstable_reactRouterRSC` imported from `@react-router/dev/vite`
 - `@vitejs/plugin-rsc`
 - `vite.config.ts` with `plugins: [reactRouterRSC(), rsc()]`
@@ -39,7 +37,6 @@ RSC Framework Mode uses a different Vite plugin from non-RSC Framework Mode. Do 
 ## Detect RSC Data Mode
 
 Look for:
-
 - `unstable_RSCRouteConfig`
 - route config passed to lower-level RSC APIs
 - APIs such as `unstable_matchRSCServerRequest`, `unstable_routeRSCServerRequest`, `unstable_RSCHydratedRouter`, or `unstable_RSCStaticRouter`
@@ -52,7 +49,6 @@ RSC Data Mode is more manual than RSC Framework Mode. Match the app's bundler an
 In RSC Framework Mode, many normal Framework Mode concepts still apply, but routes can use server component exports.
 
 Important route-module concepts from the RSC docs include:
-
 - `ServerComponent` instead of the usual client `default` component
 - `ServerErrorBoundary` paired with `ErrorBoundary`
 - `ServerLayout` paired with `Layout`
@@ -64,7 +60,6 @@ A route module cannot export both the normal client component and its server com
 ## Client/Server Boundaries
 
 RSC code must respect React's client/server split:
-
 - Use `"use client"` for components that need hooks, browser APIs, or event handlers.
 - Use server-only modules for server data access and secrets.
 - In RSC Framework Mode, prefer the `server-only` and `client-only` boundary imports described in the docs.
@@ -73,7 +68,6 @@ RSC code must respect React's client/server split:
 ## Data Loading in RSC
 
 RSC changes where data can be loaded:
-
 - Server Components can fetch data directly on the server.
 - Loaders/actions may still exist and can have RSC-specific behavior.
 - Client components still need client-safe data and cannot directly access server-only modules.
@@ -83,7 +77,6 @@ When choosing between a server component fetch, a loader, and a client loader/ac
 ## Stability
 
 RSC APIs are explicitly unstable. Before implementing or refactoring RSC code:
-
 - Check the installed React Router version.
 - Check the installed `@vitejs/plugin-rsc` version.
 - Read the app's existing RSC entry/config files.

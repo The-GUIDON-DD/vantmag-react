@@ -122,7 +122,6 @@ react-router/docs/start/framework/actions.md
 ```
 
 Framework rules:
-
 - Load route data with `loader` or `clientLoader`.
 - Mutate route data with `action` or `clientAction`.
 - Prefer route loaders/actions over ad hoc `useEffect` fetching for route data.
@@ -131,7 +130,6 @@ Framework rules:
 - In SSR/server data routes, keep Node-only/database code in server-only modules and call it from `loader`/`action`, not from browser-rendered component code.
 
 Common patterns:
-
 - Validation failure from an action: return `data({ errors, values }, { status: 400 })`, then render errors from `Route.ComponentProps["actionData"]` or `fetcher.data`.
 - Missing record in a loader: throw `data("Not Found", { status: 404 })` and render the route `ErrorBoundary`.
 - Search/filter data: parse the route request URL/search params in the loader so the URL is shareable and bookmarkable.
@@ -148,7 +146,6 @@ react-router/docs/explanation/form-vs-fetcher.md
 ```
 
 Rules of thumb:
-
 - Search/filter form that updates the URL: `<Form method="get">`.
 - Mutation that should change URL/history or redirect after completion: `<Form method="post">`.
 - Mutation that should keep the user on the same page: `useFetcher` / `<fetcher.Form>`.
@@ -164,7 +161,6 @@ react-router/docs/explanation/type-safety.md
 ```
 
 Rules:
-
 - Import types from `./+types/<route>`.
 - Use `Route.LoaderArgs`, `Route.ActionArgs`, `Route.ComponentProps`, etc.
 - Use type-only imports where appropriate.
