@@ -136,11 +136,8 @@ export async function retrieveCategoryPosts(
 export async function retrieveMediaFromID(id: number) {
   const mediaUrl = new URL(`${BASE_URL}/media/${id}`);
   mediaUrl.searchParams.set("_fields", "description");
-  const text = await fetch(mediaUrl).then((res) => res.text());
-  // Some responses start with a PHP warning from a WordPress plugin, so skip to the JSON.
-  const parsedData: MediaResponse = MediaSchema.parse(
-    JSON.parse(text.slice(text.indexOf("{"))),
-  );
+  const data = await fetch(mediaUrl).then((res) => res.json());
+  const parsedData: MediaResponse = MediaSchema.parse(data);
 
   return parsedData.description.rendered;
 }
