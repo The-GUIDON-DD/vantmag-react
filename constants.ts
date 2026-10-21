@@ -71,10 +71,10 @@ export const categories: Record<string, CategoryDetails> = {
       "As persons for and with others, we simply can’t forget what’s happening in the world today.",
     descriptionColor: "#FCF0CD",
   },
-  uncategorized: {
+  other: {
     id: 1,
     title: "Other",
-    path: "/category/uncategorized",
+    path: "/category/other",
     color: "#333333",
     descriptionColor: "#d6d6d6",
     hiddenFromNavigation: true,
