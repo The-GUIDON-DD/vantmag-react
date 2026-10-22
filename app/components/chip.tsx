@@ -3,7 +3,7 @@ export default function Chip({
   color,
   title,
 }: {
-  icon: string;
+  icon?: string;
   color: string;
   title: string;
 }) {
@@ -12,7 +12,7 @@ export default function Chip({
       className="text-white uppercase bold py-1 px-2 rounded-full flex items-center gap-2 w-max"
       style={{ backgroundColor: color }}
     >
-      <img src={icon} alt={title} className="h-5 flex-none" />
+      {icon && <img src={icon} alt={title} className="h-5 flex-none" />}
       <p className="whitespace-nowrap flex-none font-bold">{title}</p>
     </div>
   );

@@ -146,18 +146,22 @@ export default function Category({ params }: Route.ComponentProps) {
           className="flex items-center justify-center gap-3 rounded-b-[18px] px-8 py-3.5 text-white lg:gap-5 lg:rounded-bl-none lg:rounded-br-[45px] lg:px-12 lg:py-7 xl:gap-6 xl:px-20 xl:py-10"
           style={{ backgroundColor: category.color }}
         >
-          <img
-            src={category.icon}
-            alt=""
-            className="h-8 w-8 shrink-0 object-contain lg:h-12 lg:w-12 xl:h-[72px] xl:w-[72px]"
-          />
+          {category.icon && (
+            <img
+              src={category.icon}
+              alt=""
+              className="h-8 w-8 shrink-0 object-contain lg:h-12 lg:w-12 xl:h-[72px] xl:w-[72px]"
+            />
+          )}
           <h1 className="text-left font-display font-bold text-[32px] leading-[1.05] lg:text-5xl xl:text-[72px]">
             {category.title}
           </h1>
         </div>
-        <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-11 lg:pr-20 lg:pl-16 lg:leading-tight xl:py-[50px] xl:pr-[120px] xl:pl-20">
-          {category.description}
-        </p>
+        {category.description && (
+          <p className="relative z-2 m-0 box-border flex items-center px-6 py-6 text-[20px] font-medium leading-[1.1] lg:py-11 lg:pr-20 lg:pl-16 lg:leading-tight xl:py-[50px] xl:pr-[120px] xl:pl-20">
+            {category.description}
+          </p>
+        )}
       </section>
       <CategoryContent key={slug} category={category} />
     </div>

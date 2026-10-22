@@ -51,7 +51,6 @@ function App() {
 ```
 
 Look for APIs such as:
-
 - `<BrowserRouter>`
 - `<HashRouter>`
 - `<MemoryRouter>`
@@ -69,7 +68,6 @@ react-router/docs/start/declarative/routing.md
 ```
 
 Rules:
-
 - Use `<Routes>` and `<Route>` for route configuration.
 - Use nested routes with `<Outlet>` for shared layout.
 - Use index routes for default child UI.
@@ -85,7 +83,6 @@ react-router/docs/start/declarative/navigating.md
 ```
 
 Rules:
-
 - Use `<Link>` or `<NavLink>` for user-initiated internal navigation.
 - Use `NavLink` when active styling matters.
 - Use `useNavigate` for imperative navigation from event handlers or effects.
@@ -101,7 +98,6 @@ react-router/docs/explanation/location.md
 ```
 
 Rules:
-
 - Use `useParams` for dynamic route params.
 - Use `useSearchParams` for query string state.
 - Use `useLocation` for the current location object and navigation state.
@@ -111,7 +107,6 @@ Rules:
 ## Mode Boundary
 
 Declarative Mode does not have Data/Framework APIs such as:
-
 - `loader`
 - `action`
 - `<Form>`

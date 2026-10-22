@@ -40,6 +40,13 @@ const CategoryPostSchema = ArticleSchema.omit({
   content: true,
 });
 
+const TagSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+type TagResponse = z.infer<typeof TagSchema>;
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
@@ -250,4 +257,94 @@ export async function retrieveArticlesFromAuthor(
     posts,
     hasMore: offset < totalPages - 1,
   };
+}
+
+const SEARCH_POST_FIELDS = [
+  "id",
+  "date",
+  "categories",
+  "link",
+  "slug",
+  "title",
+  "excerpt",
+  "authors",
+  "featured_media",
+];
+
+export async function retrieveArticlesFromSearch(
+  term: string,
+  offset: number,
+  pageSize: number,
+): Promise<CategoryPostsPage> {
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("search", term);
+  // Same order as the original site: title matches first.
+  url.searchParams.set("orderby", "relevance");
+  url.searchParams.set("offset", String(offset));
+  // Request one extra post to know if there are more results without
+  // risking an out-of-range page error from WordPress.
+  url.searchParams.set("per_page", String(pageSize + 1));
+  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load search results (${response.status})`);
+  }
+
+  const postResponses: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(await response.json());
+  const posts = postResponses.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    posts: posts.slice(0, pageSize),
+    hasMore: posts.length > pageSize,
+  };
+}
+
+export async function retrieveTagsFromSearch(
+  term: string,
+): Promise<TagResponse[]> {
+  const url = new URL(`${BASE_URL}/tags`);
+  url.searchParams.set("search", term);
+  // Match the original site, which only lists tags that have posts.
+  url.searchParams.set("hide_empty", "true");
+  url.searchParams.set("per_page", "10");
+  url.searchParams.set("_fields", "id,name,slug");
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load tags (${response.status})`);
+  }
+
+  return TagSchema.array().parse(await response.json());
+}
+
+/* Note from Cheska: good work, but I will try to make a custom REST endpoint
+ * that retrieves random posts instead so that we will not have to make
+ * two API Calls given it's fairly slow to call the REST API multiple times... */
+
+// The original site shows random posts when a search has no results. The REST
+// API has no random order, so read the post count and start at a random offset.
+export async function retrieveFeaturedPosts(
+  count: number,
+): Promise<Array<ArticleCardData>> {
+  const countUrl = new URL(`${BASE_URL}/posts`);
+  countUrl.searchParams.set("per_page", "1");
+  countUrl.searchParams.set("_fields", "id");
+  const countResponse = await fetch(countUrl);
+  const total = parseInt(countResponse.headers.get("X-WP-Total") || "0", 10);
+
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set(
+    "offset",
+    String(Math.floor(Math.random() * Math.max(total - count, 0))),
+  );
+  url.searchParams.set("per_page", String(count));
+  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
+
+  const data = await fetch(url).then((res) => res.json());
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  return parsedData.map(categoryPostResponseToArticleCardPost);
 }

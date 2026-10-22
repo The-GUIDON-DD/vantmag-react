@@ -6,14 +6,16 @@ import ArticleCard from "~/components/article-card";
 import Bylines from "~/components/bylines";
 import Chip from "~/components/chip";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Spinner } from "~/components/ui/spinner";
 import {
   retrieveArticleFromSlug,
   retrieveMediaFromID,
   retrieveRelatedArticles,
 } from "~/fetchers";
-import { getSocMedUrlsFromArticle, parseImage } from "~/utils";
+import { categoryFromID, getSocMedUrlsFromArticle, parseImage } from "~/utils";
 import { categories } from "../../constants";
 import type { Route } from "./+types/article";
+import PageNotFound from "./page-not-found";
 
 function SanitizedContent({ html }: { html: string }) {
   const cleanHTML = DOMPurify.sanitize(html, {
@@ -60,7 +62,7 @@ function SanitizedContent({ html }: { html: string }) {
 
 export default function Article({ params }: Route.ComponentProps) {
   const { slug } = params;
-  const { isPending, isError, data, error } = useQuery({
+  const { isPending, isError, data } = useQuery({
     queryKey: [slug],
     queryFn: () => retrieveArticleFromSlug(slug),
   });
@@ -108,7 +110,7 @@ export default function Article({ params }: Route.ComponentProps) {
       </div>
     );
   } else if (isError) {
-    return <div>Error: {JSON.stringify(error)}</div>;
+    return <PageNotFound />;
   } else {
     const category = Object.values(categories).find(
       ({ id }) => data.category === id,
@@ -167,16 +169,25 @@ export default function Article({ params }: Route.ComponentProps) {
           <div className="h-0 grow w-full border-black border-t" />
         </section>
         <section className="w-full min-h-fit mb-15 px-6 lg:px-[20%] grid grid-cols-3 gap-4">
-          {relatedArticles &&
-            relatedArticles?.map((article) => (
-              <ArticleCard
-                key={article.id}
-                post={article}
-                category={categories[0]}
-                variant="grid"
-                showCategory={false}
-              />
-            ))}
+          {isRelatedPending && (
+            <div className="w-full col-span-3 flex justify-center">
+              <Spinner />
+            </div>
+          )}
+          {isRelatedError && (
+            <div className="w-full col-span-3 flex justify-center">
+              <p>Failed to fetch articles.</p>
+            </div>
+          )}
+          {relatedArticles?.map((article) => (
+            <ArticleCard
+              key={article.id}
+              post={article}
+              category={categoryFromID(article.category)}
+              variant="grid"
+              showCategory={false}
+            />
+          ))}
         </section>
       </main>
     );
