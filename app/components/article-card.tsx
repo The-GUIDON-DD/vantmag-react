@@ -7,10 +7,6 @@ import { parseImage, plainText } from "../utils";
 import Bylines from "./bylines";
 import Chip from "./chip";
 
-// based on where current site grabs image if none is included
-const FALLBACK_IMAGE_URL =
-  "https://vantage.theguidon.com/wp-content/themes/vantmag-revamp-2022/assets/images/vantmag_16x9.png";
-
 type ArticleCardProps = {
   post: ArticleCardData;
   category?: CategoryDetails;
@@ -61,7 +57,7 @@ function PostImage({
     >
       {(!hasMedia || !isPending) && (
         <img
-          src={displayedImage?.src || FALLBACK_IMAGE_URL}
+          src={displayedImage?.src || "/public/default_image.webp"}
           srcSet={displayedImage?.srcSet}
           sizes={displayedImage?.sizes}
           alt={displayedImage?.alt || ""}
