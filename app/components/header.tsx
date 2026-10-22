@@ -87,7 +87,9 @@ function Sidebar({ hideSidebar }: { hideSidebar: () => void }) {
                 to={path}
                 end
                 className={({ isActive }) =>
-                  isActive ? "underline underline-offset-4" : undefined
+                  isActive
+                    ? "underline decoration-[2.5px] underline-offset-4"
+                    : undefined
                 }
               >
                 {title}
@@ -131,7 +133,9 @@ export default function Header() {
                         to={path}
                         end
                         className={({ isActive }) =>
-                          isActive ? "underline underline-offset-4" : undefined
+                          isActive
+                            ? "underline decoration-[2.5px] underline-offset-4"
+                            : undefined
                         }
                       >
                         {title}
