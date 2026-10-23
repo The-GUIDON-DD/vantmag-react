@@ -15,11 +15,18 @@
   --color-vant-purple-dark: #282b7d;
 }
 
-html,
-body {
-  @apply bg-white;
-  max-width: 100vw;
-  overflow-x: clip;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+}
+
+html, body {
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  overflow-x: hidden;
 }
 
 .category-article {
@@ -155,6 +162,27 @@ body:has(.category-page) aside.fixed {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --food: #f9a524;
+  --tv-film: #ef3e68;
+  --theater-arts: #755489;
+  --music: #b5c932;
+  --expose: #f6B50b;
+  --hub: #3dbb95;
+  --hype: #d63ba3;
+
+  --h1-font-size: 112px;
+  --h2-font-size: 72px;
+  --h3-font-size: 48px;
+  --h4-font-size: 32px;
+  --h5-font-size: 24px;
+  --h6-font-size: 20px;
+  --body-xl-font-size: 20px;
+  --body-l-font-size: 18px;
+  --body-font-size: 16px;
+  --body-s-font-size: 14px;
+  --body-xs-font-size: 12px;
+  --body-xxs-font-size: 10px;
 }
 
 .dark {
@@ -205,82 +233,86 @@ body:has(.category-page) aside.fixed {
   }
 }
 
-@font-face {
+h2, .h2 {
   font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-Black.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-Black.woff") format("woff");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
+  font-size: var(--h2-font-size);
 }
 
-@font-face {
+h3, .h3 {
   font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-Bold.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-Bold.woff") format("woff");
+  font-size: var(--h3-font-size);
+}
+
+.chip {
+  color: white;
+  background-color: var(--bg-color);
+  font-size: var(--body-s-font-size);
+  font-family: Roboto, sans-serif;
   font-weight: bold;
-  font-style: normal;
-  font-display: swap;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 64px;
+  width: fit-content;
+  min-height: 28px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  column-gap: 4px;
+  text-decoration: none;
 }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-BoldIt.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-BoldIt.woff") format("woff");
-  font-weight: bold;
-  font-style: italic;
-  font-display: swap;
+.chip > img {
+  object-fit: contain;
+  object-position: center;
+  height: 16px;
 }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-It.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-It.woff") format("woff");
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
+.general-container {
+  padding: 0 120px;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1440px;
 }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-Light.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-Light.woff") format("woff");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
+@media screen and (max-width: 576px) {
+  html.no-scroll,
+  body.no-scroll {
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-Regular.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-Regular.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+  :root {
+    --h1-font-size: 40px;
+    --h2-font-size: 32px;
+    --h3-font-size: 24px;
+    --h4-font-size: 22px;
+    --h5-font-size: 20px;
+    --h6-font-size: 18px;
+  
+    --body-xl-font-size: 20px;
+    --body-l-font-size: 18px;
+    --body-font-size: 16px;
+    --body-s-font-size: 14px;
+    --body-xs-font-size: 12px;
+    --body-xxs-font-size: 10px;
+  }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-Semibold.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-Semibold.woff") format("woff");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
+  h1,
+  .h1 {
+    font-size: 40px;
+  }
+  
+  h2,
+  .h2 {
+    font-size: 32px;
+  }
+  
+  h3,
+  .h3 {
+    font-size: 24px;
+  }
 
-@font-face {
-  font-family: "Calluna";
-  src:
-    url("/fonts/calluna/Calluna-SemiboldIt.woff2") format("woff2"),
-    url("/fonts/calluna/Calluna-SemiboldIt.woff") format("woff");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
+  .general-container {
+    padding: 0 16px;
+  }
 }

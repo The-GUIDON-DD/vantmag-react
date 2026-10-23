@@ -1,0 +1,80 @@
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Black.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Black.woff") format("woff");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Bold.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-BoldIt.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-BoldIt.woff") format("woff");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-It.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-It.woff") format("woff");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Light.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Regular.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Regular.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-Semibold.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-Semibold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calluna";
+  src:
+    url("/fonts/calluna/Calluna-SemiboldIt.woff2") format("woff2"),
+    url("/fonts/calluna/Calluna-SemiboldIt.woff") format("woff");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
