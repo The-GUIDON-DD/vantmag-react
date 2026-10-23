@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
 import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router";
 import SearchBar from "./searchbar";
 
 const links = [
@@ -83,7 +83,17 @@ function Sidebar({ hideSidebar }: { hideSidebar: () => void }) {
         <ul className="mt-8 list-none flex flex-col items-stretch gap-4 text-white uppercase font-bold text-lg">
           {links.map(({ title, path }) => (
             <li key={title}>
-              <Link to={path}>{title}</Link>
+              <NavLink
+                to={path}
+                end
+                className={({ isActive }) =>
+                  isActive
+                    ? "underline decoration-[2.5px] underline-offset-4"
+                    : undefined
+                }
+              >
+                {title}
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -119,12 +129,20 @@ export default function Header() {
                 <ul className="flex list-none text-white uppercase font-bold text-lg">
                   {links.map(({ title, path }, ix) => (
                     <li key={title}>
-                      <Link to={path}>
+                      <NavLink
+                        to={path}
+                        end
+                        className={({ isActive }) =>
+                          isActive
+                            ? "underline decoration-[2.5px] underline-offset-4"
+                            : undefined
+                        }
+                      >
                         {title}
-                        {ix < links.length - 1 && (
-                          <span className="mx-4">&middot;</span>
-                        )}
-                      </Link>
+                      </NavLink>
+                      {ix < links.length - 1 && (
+                        <span className="mx-4">&middot;</span>
+                      )}
                     </li>
                   ))}
                 </ul>
