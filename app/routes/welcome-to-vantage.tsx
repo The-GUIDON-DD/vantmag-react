@@ -1,9 +1,8 @@
 import type { CSSProperties } from "react";
 import Chip from "~/components/chip";
 import { categories } from "../../constants";
-import type { Route } from "./+types/welcome-to-vantage";
 
-export function meta(_: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "About-Vantage Magazine" },
     { name: "description", content: "Vantage Magazine" },
@@ -15,13 +14,11 @@ const photos = [
     no: "01",
     color: categories.food.color,
     area: "[grid-area:p1]",
-    flat: "rounded-1-none",
   },
   {
     no: "02",
     color: categories.hub.color,
     area: "[grid-area:p2]",
-    flat: "rounded-1-none",
   },
   {
     no: "03",
@@ -32,13 +29,11 @@ const photos = [
     no: "04",
     color: categories.expose.color,
     area: "[grid-area:p4]",
-    flat: "rounded-r-none",
   },
   {
     no: "05",
     color: categories.hype.color,
     area: "[grid-area:p5]",
-    flat: "rounded-r-none",
   },
 ];
 
@@ -58,7 +53,7 @@ export default function WelcomeToVantage() {
         <span className="bg-vant-purple">campus culture</span> and the people
         who <span className="whitespace-nowrap">make it.</span>
       </h2>
-      <div className="max-auto my-0 w-full max-w-360 px-30 py-0 mb-16 max-[576px]:px-4 max-[576px]:mt-5 max-[576px]:mb-10">
+      <div className="mx-auto my-0 w-full max-w-360 px-30 py-0 mb-16 max-[576px]:px-4 max-[576px]:mt-5 max-[576px]:mb-10">
         <h3 className="font-display text-5xl font-bold max-[576px]:hidden">
           We are The GUIDON's online magazine, a publication geared towards{" "}
           <span className="bg-[#C9CBFF]">campus culture</span> and the people
@@ -137,14 +132,14 @@ export default function WelcomeToVantage() {
             key={p.no}
             src={`https://vantage.theguidon.com/wp-content/themes/vantmag-revamp-2022/assets/images/about/${p.no}.jpg`}
             alt={`Vantage ${p.no}`}
-            className={`relative z-[1] size-full rounded-sm object-cover ${p.area} ${p.flat}`}
+            className={`relative z-[1] size-full rounded-sm object-cover ${p.area} rounded-none`}
           />
         ))}
         {photos.map((p) => (
           <div
             key={`bg-${p.no}`}
             style={{ "--bg-color": p.color } as CSSProperties}
-            className={`size-full rounded-sm translate-4 bg-[var(--bg-color,_var(--color-vant-purple))] ${p.area} ${p.flat} max-[576px]:hidden`}
+            className={`size-full rounded-sm translate-4 bg-[var(--bg-color,_var(--color-vant-purple))] ${p.area} rounded-none max-[576px]:hidden`}
           ></div>
         ))}
       </div>
