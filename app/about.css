@@ -13,6 +13,10 @@
   border: 1px solid #7C7C7C;
 }
 
+#about h3, .h3 {
+  font-family: "Calluna";
+  font-size: 48px;
+}
 
 #about h3 .highlight {
   background-color: #C9CBFF;
@@ -140,6 +144,11 @@
 
     #about .photos-container > div {
         display: none;
+    }
+
+    #about h2, .h2 {
+      font-family: 'Calluna';
+      font-size: 32px;
     }
 
 

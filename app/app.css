@@ -171,18 +171,7 @@ body:has(.category-page) aside.fixed {
   --hub: #3dbb95;
   --hype: #d63ba3;
 
-  --h1-font-size: 112px;
-  --h2-font-size: 72px;
-  --h3-font-size: 48px;
-  --h4-font-size: 32px;
-  --h5-font-size: 24px;
-  --h6-font-size: 20px;
   --body-xl-font-size: 20px;
-  --body-l-font-size: 18px;
-  --body-font-size: 16px;
-  --body-s-font-size: 14px;
-  --body-xs-font-size: 12px;
-  --body-xxs-font-size: 10px;
 }
 
 .dark {
@@ -233,16 +222,6 @@ body:has(.category-page) aside.fixed {
   }
 }
 
-h2, .h2 {
-  font-family: "Calluna";
-  font-size: var(--h2-font-size);
-}
-
-h3, .h3 {
-  font-family: "Calluna";
-  font-size: var(--h3-font-size);
-}
-
 .chip {
   color: white;
   background-color: var(--bg-color);
@@ -279,37 +258,6 @@ h3, .h3 {
   body.no-scroll {
     overflow-x: hidden;
     overflow-y: hidden;
-  }
-
-  :root {
-    --h1-font-size: 40px;
-    --h2-font-size: 32px;
-    --h3-font-size: 24px;
-    --h4-font-size: 22px;
-    --h5-font-size: 20px;
-    --h6-font-size: 18px;
-  
-    --body-xl-font-size: 20px;
-    --body-l-font-size: 18px;
-    --body-font-size: 16px;
-    --body-s-font-size: 14px;
-    --body-xs-font-size: 12px;
-    --body-xxs-font-size: 10px;
-  }
-
-  h1,
-  .h1 {
-    font-size: 40px;
-  }
-  
-  h2,
-  .h2 {
-    font-size: 32px;
-  }
-  
-  h3,
-  .h3 {
-    font-size: 24px;
   }
 
   .general-container {
