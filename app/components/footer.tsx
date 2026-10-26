@@ -37,7 +37,7 @@ export default function Footer() {
         <img
           alt="Vantage Magazine"
           src="/logo.svg"
-          className="w-full pb-6 min-w-[300px]"
+          className="w-full pb-6 min-w-[200px] max-w-[400px]"
         />
         <p className="pb-4">
           We are The GUIDON's online magazine, a publication geared towards
