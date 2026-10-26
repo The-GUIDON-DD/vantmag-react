@@ -56,7 +56,7 @@ export default function WelcomeToVantage() {
           <span className="bg-[#C9CBFF]">campus culture</span> and the people
           who <span className="whitespace-nowrap">make it.</span>
         </h3>
-        <hr className="mx-0 my-6 border border-neutral-500 hidden lg:block" />
+        <hr className="mx-0 my-6 border border-neutral-500 hidden lg:block w-full" />
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-16 gap-y-6 my-8 lg:my-0">
           <div>
             <p className="text-xl leading-[1.4] not-last:mb-8">
