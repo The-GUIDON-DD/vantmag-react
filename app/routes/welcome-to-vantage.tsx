@@ -50,14 +50,14 @@ export default function WelcomeToVantage() {
         <span className="bg-vant-purple">campus culture</span> and the people
         who <span className="whitespace-nowrap">make it.</span>
       </h2>
-      <div className="py-0 my-0 w-full max-w-360 px-4 lg:px-0 lg:mt-5 lg:mb-10">
+      <div className="py-0 my-0 w-full px-4 lg:px-18 lg:mt-5 lg:mb-10 flex flex-col items-center">
         <h3 className="font-display text-5xl font-bold hidden lg:block">
           We are The GUIDON's online magazine, a publication geared towards{" "}
           <span className="bg-[#C9CBFF]">campus culture</span> and the people
           who <span className="whitespace-nowrap">make it.</span>
         </h3>
         <hr className="mx-0 my-6 border border-neutral-500 hidden lg:block" />
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-16 gap-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-16 gap-y-6 my-8 lg:my-0">
           <div>
             <p className="text-xl leading-[1.4] not-last:mb-8">
               In line with the massive potential of the online medium, our
