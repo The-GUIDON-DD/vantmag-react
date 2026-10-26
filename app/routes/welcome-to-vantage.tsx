@@ -50,7 +50,7 @@ export default function WelcomeToVantage() {
         <span className="bg-vant-purple">campus culture</span> and the people
         who <span className="whitespace-nowrap">make it.</span>
       </h2>
-      <div className="py-0 my-0 w-full px-4 lg:px-18 lg:mt-5 lg:mb-10 flex flex-col items-center">
+      <div className="py-0 my-0 w-full px-4 lg:px-[12%] lg:mt-5 lg:mb-10 flex flex-col items-center">
         <h3 className="font-display text-5xl font-bold hidden lg:block">
           We are The GUIDON's online magazine, a publication geared towards{" "}
           <span className="bg-[#C9CBFF]">campus culture</span> and the people
