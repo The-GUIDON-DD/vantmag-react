@@ -127,7 +127,7 @@ export default function WelcomeToVantage() {
             key={p.no}
             src={`/images/${p.no}.jpg`}
             alt={`Vantage ${p.no}`}
-            className={`relative z-[1] size-full rounded-sm object-cover ${p.area} rounded-none`}
+            className={`relative z-1 size-full object-cover ${p.area} rounded-none`}
           />
         ))}
         {photos.map((p) => (
