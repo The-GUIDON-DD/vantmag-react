@@ -1,12 +1,11 @@
 import { z } from "zod";
-import {
-  type ArticleCardData,
-  type ArticleData,
-  type Author,
-  BASE_URL,
-  type CategoryPostsPage,
-  type HomeData,
+import type {
+  ArticleCardData,
+  ArticleData,
+  Author,
+  CategoryPostsPage,
 } from "./types";
+import { BASE_URL, CUSTOM_URL } from "./types";
 import { formatDate, plainText } from "./utils";
 
 const AuthorSchema = z.object({
@@ -41,6 +40,13 @@ const CategoryPostSchema = ArticleSchema.omit({
   content: true,
 });
 
+const TagSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+type TagResponse = z.infer<typeof TagSchema>;
 type MediaResponse = z.infer<typeof MediaSchema>;
 type ArticleResponse = z.infer<typeof ArticleSchema>;
 type CategoryPostResponse = z.infer<typeof CategoryPostSchema>;
@@ -253,10 +259,11 @@ export async function retrieveArticlesFromAuthor(
   };
 }
 
-const HOME_FIELDS = [
+const SEARCH_POST_FIELDS = [
   "id",
   "date",
   "categories",
+  "link",
   "slug",
   "title",
   "excerpt",
@@ -264,51 +271,69 @@ const HOME_FIELDS = [
   "featured_media",
 ];
 
-/**
- * Deterministic shuffle. The original theme used PHP `rand()` for its
- * suggestions row; seeding off the slugs keeps the order stable between
- * renders so the row does not reshuffle on every re-render.
- */
-function seededShuffle<T>(items: T[], seed: string) {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (Math.imul(31, hash) + seed.charCodeAt(i)) | 0;
-  }
-
-  const shuffled = [...items];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    hash = (Math.imul(hash, 1103515245) + 12345) | 0;
-    const j = Math.abs(hash) % (i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
-/**
- * Hero, latest and suggestions all come from one request. The hero is simply
- * the newest post — the WordPress install has no sticky posts.
- */
-export async function retrieveHomeData(): Promise<HomeData> {
+export async function retrieveArticlesFromSearch(
+  term: string,
+  offset: number,
+  pageSize: number,
+): Promise<CategoryPostsPage> {
   const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set("per_page", "13");
-  url.searchParams.set("orderby", "date");
-  url.searchParams.set("order", "desc");
-  url.searchParams.set("_fields", HOME_FIELDS.join(","));
+  url.searchParams.set("search", term);
+  // Same order as the original site: title matches first.
+  url.searchParams.set("orderby", "relevance");
+  url.searchParams.set("offset", String(offset));
+  // Request one extra post to know if there are more results without
+  // risking an out-of-range page error from WordPress.
+  url.searchParams.set("per_page", String(pageSize + 1));
+  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Could not load articles (${response.status})`);
+    throw new Error(`Could not load search results (${response.status})`);
   }
 
-  const parsed = CategoryPostSchema.array().parse(await response.json());
-  const posts = parsed.map(categoryPostResponseToArticleCardPost);
+  const postResponses: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(await response.json());
+  const posts = postResponses.map(categoryPostResponseToArticleCardPost);
 
   return {
-    hero: posts[0] ?? null,
-    latest: posts.slice(1, 7),
-    suggestions: seededShuffle(
-      posts.slice(1),
-      posts.map((p) => p.slug).join(),
-    ).slice(0, 6),
+    posts: posts.slice(0, pageSize),
+    hasMore: posts.length > pageSize,
   };
+}
+
+export async function retrieveTagsFromSearch(
+  term: string,
+): Promise<TagResponse[]> {
+  const url = new URL(`${BASE_URL}/tags`);
+  url.searchParams.set("search", term);
+  // Match the original site, which only lists tags that have posts.
+  url.searchParams.set("hide_empty", "true");
+  url.searchParams.set("per_page", "10");
+  url.searchParams.set("_fields", "id,name,slug");
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load tags (${response.status})`);
+  }
+
+  return TagSchema.array().parse(await response.json());
+}
+
+/* Retrieve N random posts */
+export async function retrieveFeaturedPosts(
+  count: number = 3,
+): Promise<Array<ArticleCardData>> {
+  const url = new URL(`${CUSTOM_URL}/random-articles`);
+  url.searchParams.set("per_page", String(count));
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Could not load featured articles.");
+  }
+
+  const data = await response.json();
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  return parsedData.map(categoryPostResponseToArticleCardPost);
 }

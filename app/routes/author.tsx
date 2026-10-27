@@ -48,24 +48,23 @@ function AuthorArticles({ author_id }: { author_id: number }) {
         <section className="w-full min-h-fit mb-15 grid grid-cols-1 lg:grid-cols-3 gap-4">
           {isPending && <p>Pending articles...</p>}
           {isError && <p>Failed to fetch articles: {String(error)}</p>}
-          {articles &&
-            articles.map((article: ArticleCardData) => {
-              const category = article.category
-                ? Object.values(categories).find(
-                    ({ id }: { id: number }) => id === article.category,
-                  )
-                : null;
+          {articles?.map((article: ArticleCardData) => {
+            const category = article.category
+              ? Object.values(categories).find(
+                  ({ id }: { id: number }) => id === article.category,
+                )
+              : null;
 
-              return (
-                <ArticleCard
-                  key={article.id}
-                  post={article}
-                  category={category || categories[0]}
-                  variant="grid"
-                  showCategory={!!category}
-                />
-              );
-            })}
+            return (
+              <ArticleCard
+                key={article.id}
+                post={article}
+                category={category || categories[0]}
+                variant="grid"
+                showCategory={!!category}
+              />
+            );
+          })}
         </section>
         {hasNextPage && (
           <div className="mt-14 text-center">

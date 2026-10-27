@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { CgSearch } from "react-icons/cg";
 import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
-import { Form, Link } from "react-router";
+import { Link, NavLink } from "react-router";
+import SearchBar from "./searchbar";
 
 const links = [
   {
@@ -41,25 +42,6 @@ const links = [
     path: "/welcome-to-vantage",
   },
 ];
-
-function SearchBar({ width = "50vw" }: { width?: string | number }) {
-  return (
-    <section
-      className="bg-white rounded-full px-5 py-4 flex items-center"
-      style={{ width: width }}
-    >
-      <CgSearch className="text-vant-purple text-3xl mr-5" />
-      <Form action="/search" className="grow">
-        <input
-          type="text"
-          name="s"
-          placeholder="Search an article, author, or category"
-          className="bg-transparent border-none focus:outline-none focus:ring-0 w-full h-full text-md lg:text-xl"
-        />
-      </Form>
-    </section>
-  );
-}
 
 function Search({ hidden = true }: { hidden?: boolean }) {
   return (
@@ -101,7 +83,17 @@ function Sidebar({ hideSidebar }: { hideSidebar: () => void }) {
         <ul className="mt-8 list-none flex flex-col items-stretch gap-4 text-white uppercase font-bold text-lg">
           {links.map(({ title, path }) => (
             <li key={title}>
-              <Link to={path}>{title}</Link>
+              <NavLink
+                to={path}
+                end
+                className={({ isActive }) =>
+                  isActive
+                    ? "underline decoration-[2.5px] underline-offset-4"
+                    : undefined
+                }
+              >
+                {title}
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -140,12 +132,20 @@ export default function Header() {
                 <div className="grow" />
                 <ul className="flex items-center list-none text-white uppercase font-bold text-lg whitespace-nowrap">
                   {links.map(({ title, path }, ix) => (
-                    <li key={title} className="flex items-center">
-                      <Link to={path}>{title}</Link>
+                    <li key={title}>
+                      <NavLink
+                        to={path}
+                        end
+                        className={({ isActive }) =>
+                          isActive
+                            ? "underline decoration-[2.5px] underline-offset-4"
+                            : undefined
+                        }
+                      >
+                        {title}
+                      </NavLink>
                       {ix < links.length - 1 && (
-                        <span aria-hidden="true" className="mx-5">
-                          &bull;
-                        </span>
+                        <span className="mx-4">&middot;</span>
                       )}
                     </li>
                   ))}

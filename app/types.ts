@@ -1,4 +1,6 @@
-export const BASE_URL = "https://vantage.theguidon.com/wp-json/wp/v2";
+const WPJSON_BASE = "https://vantage.theguidon.com/wp-json";
+export const BASE_URL = `${WPJSON_BASE}/wp/v2`;
+export const CUSTOM_URL = `${WPJSON_BASE}/custom/v1`;
 
 export interface Author {
   id: number;
@@ -35,10 +37,11 @@ export type CategoryDetails = {
   id: number;
   title: string;
   path: string;
-  icon: string;
+  icon?: string;
   color: string;
-  description: string;
+  description?: string;
   descriptionColor: string;
+  hiddenFromNavigation?: boolean;
 };
 
 export interface CategoryPostsPage {

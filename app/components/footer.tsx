@@ -37,7 +37,7 @@ export default function Footer() {
         <img
           alt="Vantage Magazine"
           src="/logo.svg"
-          className="w-full pb-6 min-w-[300px]"
+          className="w-full pb-6 min-w-[200px] max-w-[400px]"
         />
         <p className="pb-4">
           We are The GUIDON's online magazine, a publication geared towards
@@ -71,11 +71,13 @@ export default function Footer() {
       <section className="mt-8 md:order-last">
         <p className="font-bold uppercase">Categories</p>
         <section className="w-full flex flex-wrap gap-4 mt-4">
-          {Object.values(categories).map(({ title, path, icon, color }) => (
-            <Link to={path} key={title}>
-              <Chip title={title} icon={icon} color={color} />
-            </Link>
-          ))}
+          {Object.values(categories)
+            .filter(({ hiddenFromNavigation }) => !hiddenFromNavigation)
+            .map(({ title, path, icon, color }) => (
+              <Link to={path} key={title}>
+                <Chip title={title} icon={icon} color={color} />
+              </Link>
+            ))}
         </section>
       </section>
     </footer>
