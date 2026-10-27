@@ -326,7 +326,12 @@ export async function retrieveFeaturedPosts(
   const url = new URL(`${CUSTOM_URL}/random-articles`);
   url.searchParams.set("per_page", String(count));
 
-  const data = await fetch(url).then((res) => res.json());
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Could not load featured articles.");
+  }
+
+  const data = await response.json();
   const parsedData: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(data);
 
