@@ -1,11 +1,11 @@
 import { z } from "zod";
-import {
-  type ArticleCardData,
-  type ArticleData,
-  type Author,
-  BASE_URL,
-  type CategoryPostsPage,
+import type {
+  ArticleCardData,
+  ArticleData,
+  Author,
+  CategoryPostsPage,
 } from "./types";
+import { BASE_URL, CUSTOM_URL } from "./types";
 import { formatDate, plainText } from "./utils";
 
 const AuthorSchema = z.object({
@@ -319,30 +319,19 @@ export async function retrieveTagsFromSearch(
   return TagSchema.array().parse(await response.json());
 }
 
-/* Note from Cheska: good work, but I will try to make a custom REST endpoint
- * that retrieves random posts instead so that we will not have to make
- * two API Calls given it's fairly slow to call the REST API multiple times... */
-
-// The original site shows random posts when a search has no results. The REST
-// API has no random order, so read the post count and start at a random offset.
+/* Retrieve N random posts */
 export async function retrieveFeaturedPosts(
-  count: number,
+  count: number = 3,
 ): Promise<Array<ArticleCardData>> {
-  const countUrl = new URL(`${BASE_URL}/posts`);
-  countUrl.searchParams.set("per_page", "1");
-  countUrl.searchParams.set("_fields", "id");
-  const countResponse = await fetch(countUrl);
-  const total = parseInt(countResponse.headers.get("X-WP-Total") || "0", 10);
-
-  const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set(
-    "offset",
-    String(Math.floor(Math.random() * Math.max(total - count, 0))),
-  );
+  const url = new URL(`${CUSTOM_URL}/random-articles`);
   url.searchParams.set("per_page", String(count));
-  url.searchParams.set("_fields", SEARCH_POST_FIELDS.join(","));
 
-  const data = await fetch(url).then((res) => res.json());
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Could not load featured articles.");
+  }
+
+  const data = await response.json();
   const parsedData: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(data);
 
