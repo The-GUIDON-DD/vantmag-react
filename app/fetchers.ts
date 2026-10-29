@@ -358,7 +358,7 @@ export async function retrieveHomeData(): Promise<HomeData> {
   const parsedData: CategoryPostResponse[] =
     CategoryPostSchema.array().parse(data);
 
-  if (parsedData.length < 0) {
+  if (parsedData.length === 0) {
     throw new Error("No posts found.");
   }
 
