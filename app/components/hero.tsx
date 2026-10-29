@@ -37,7 +37,7 @@ export default function Hero({ post }: { post: ArticleCardData }) {
             src={image?.src || FALLBACK_IMAGE_URL}
             srcSet={image?.srcSet}
             sizes={image?.sizes}
-            alt={image?.alt || ""}
+            alt={image?.alt || plainText(post.title)}
             className="thumbnail"
           />
         </div>
