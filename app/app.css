@@ -356,12 +356,10 @@ body:has(.category-page) aside.fixed {
 .latest-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, auto);
+  grid-template-rows: 1fr;
   column-gap: 28px;
   row-gap: 0px;
-  grid-template-areas:
-    "a0 a1 a2"
-    "a0 a1 a2";
+  grid-template-areas: "a0 a1 a2";
 }
 
 .latest-grid > *:nth-child(1) {

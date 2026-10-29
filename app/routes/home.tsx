@@ -62,7 +62,7 @@ export default function Home() {
     <main id="index" className="w-full">
       <Hero post={data.hero} />
 
-      <div className="mx-auto w-full px-4 lg:w-[90%] lg:px-5">
+      <div className="mx-auto w-full px-4 lg:w-[90%] lg:px-5 max-w-[1380px]">
         <section className="latest-grid mb-20">
           <div style={highlight(data.latest[0])}>
             <ArticleCard
