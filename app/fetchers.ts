@@ -337,3 +337,35 @@ export async function retrieveFeaturedPosts(
 
   return parsedData.map(categoryPostResponseToArticleCardPost);
 }
+
+interface HomeData {
+  hero: ArticleCardData;
+  latest: ArticleCardData[];
+}
+
+export async function retrieveHomeData(): Promise<HomeData> {
+  const url = new URL(`${BASE_URL}/posts`);
+  url.searchParams.set("per_page", "7");
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Could not load latest articles.");
+  }
+
+  const data = await response.json();
+  const parsedData: CategoryPostResponse[] =
+    CategoryPostSchema.array().parse(data);
+
+  if (parsedData.length === 0) {
+    throw new Error("No posts found.");
+  }
+
+  const articles = parsedData.map(categoryPostResponseToArticleCardPost);
+
+  return {
+    hero: articles[0],
+    latest: articles.slice(1),
+  };
+}

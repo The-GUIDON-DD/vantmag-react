@@ -1,5 +1,7 @@
 import type { CategoryDetails } from "./app/types";
 
+export const fallbackImage = "/default_image.webp";
+
 export const categories: Record<string, CategoryDetails> = {
   "tv-and-film": {
     id: 13,
