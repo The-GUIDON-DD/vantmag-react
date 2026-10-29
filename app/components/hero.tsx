@@ -1,14 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { categories } from "../../constants";
+import { categories, fallbackImage } from "../../constants";
 import { retrieveMediaFromID } from "../fetchers";
 import type { ArticleCardData } from "../types";
 import { parseImage, plainText } from "../utils";
 import Bylines from "./bylines";
 import Chip from "./chip";
-
-const FALLBACK_IMAGE_URL =
-  "https://vantage.theguidon.com/wp-content/themes/vantmag-revamp-2022/assets/images/vantmag_16x9.png";
 
 /**
  * The lead story. Deliberately not an `ArticleCard` — the original site renders
@@ -21,7 +18,7 @@ export default function Hero({ post }: { post: ArticleCardData }) {
   );
   const authors = post.authors ?? [];
 
-  const { data: image } = useQuery({
+  const { data: image, isError } = useQuery({
     queryKey: ["rendered", post.featured_media],
     queryFn: () => retrieveMediaFromID(post.featured_media),
     enabled: post.featured_media > 0,
@@ -34,7 +31,7 @@ export default function Hero({ post }: { post: ArticleCardData }) {
       <div className="article">
         <div className="thumbnail-container">
           <img
-            src={image?.src || FALLBACK_IMAGE_URL}
+            src={isError || !image || !image.src ? fallbackImage : image.src}
             srcSet={image?.srcSet}
             sizes={image?.sizes}
             alt={image?.alt || plainText(post.title)}

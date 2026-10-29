@@ -3,6 +3,7 @@ import postsFixture from "./__fixtures__/posts.json";
 import { retrieveCategoryPosts, retrieveHomeData } from "./fetchers";
 import { plainText, postDate } from "./utils";
 
+// will revise this in another PR and figure out a testing strategy for our fetchers and functions - cheska
 /**
  * The fixture is a real response captured from the live WordPress install, so
  * these cover the actual field shapes (PublishPress `authors`, entity-encoded
