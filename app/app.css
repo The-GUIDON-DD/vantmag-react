@@ -356,35 +356,32 @@ body:has(.category-page) aside.fixed {
 .latest-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(6, auto);
-  column-gap: 40px;
-  row-gap: 24px;
+  grid-template-rows: repeat(2, auto);
+  column-gap: 28px;
+  row-gap: 0px;
   grid-template-areas:
-    "a0 a1 a3"
-    "a0 a1 a3"
-    "a0 a1 a4"
-    "a0 a2 a4"
-    "a0 a2 a5"
-    "a0 a2 a5";
+    "a0 a1 a2"
+    "a0 a1 a2";
 }
 
 .latest-grid > *:nth-child(1) {
   grid-area: a0;
 }
+
 .latest-grid > *:nth-child(2) {
   grid-area: a1;
 }
+
 .latest-grid > *:nth-child(3) {
   grid-area: a2;
 }
-.latest-grid > *:nth-child(4) {
-  grid-area: a3;
+
+section.latest-grid-tall-images .article-card-image {
+  aspect-ratio: 186 / 220;
 }
-.latest-grid > *:nth-child(5) {
-  grid-area: a4;
-}
-.latest-grid > *:nth-child(6) {
-  grid-area: a5;
+
+section.latest-grid-small-images .article-card-image {
+  max-width: 132px;
 }
 
 .heading-container {

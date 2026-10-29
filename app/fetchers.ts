@@ -345,7 +345,7 @@ interface HomeData {
 
 export async function retrieveHomeData(): Promise<HomeData> {
   const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set("per_page", "6");
+  url.searchParams.set("per_page", "7");
   url.searchParams.set("orderby", "date");
   url.searchParams.set("order", "desc");
 

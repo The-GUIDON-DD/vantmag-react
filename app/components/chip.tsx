@@ -9,7 +9,7 @@ export default function Chip({
 }) {
   return (
     <div
-      className="text-white uppercase bold py-1 px-2 rounded-full flex items-center gap-2 w-max"
+      className="text-white uppercase bold py-1 px-2 rounded-full flex items-center gap-2 w-max text-xs"
       style={{ backgroundColor: color }}
     >
       {icon && <img src={icon} alt={title} className="h-5 flex-none" />}

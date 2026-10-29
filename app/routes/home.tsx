@@ -62,18 +62,40 @@ export default function Home() {
     <main id="index" className="w-full">
       <Hero post={data.hero} />
 
-      <div className="mx-auto w-full max-w-[1240px] px-4 lg:w-[90%] lg:px-5">
+      <div className="mx-auto w-full px-4 lg:w-[90%] lg:px-5">
         <section className="latest-grid mb-20">
-          {data.latest.map((post, ix) => (
-            <div key={post.id} style={highlight(post)}>
-              <ArticleCard
-                post={post}
-                category={categoryOf(post)}
-                variant={ix === 0 ? "featured" : "grid"}
-                showExcerpt={ix === 0}
-              />
-            </div>
-          ))}
+          <div style={highlight(data.latest[0])}>
+            <ArticleCard
+              post={data.latest[0]}
+              category={categoryOf(data.latest[0])}
+              variant="featured"
+              showExcerpt={true}
+            />
+          </div>
+          <section className="latest-grid-tall-images size-full flex flex-col items-stretch gap-12">
+            {data.latest.slice(1, 3).map((post) => (
+              <div key={post.id} style={highlight(post)}>
+                <ArticleCard
+                  post={post}
+                  category={categoryOf(post)}
+                  variant="featured-row"
+                  showExcerpt={false}
+                />
+              </div>
+            ))}
+          </section>
+          <section className="latest-grid-small-images size-full flex flex-col items-stretch gap-6">
+            {data.latest.slice(3).map((post) => (
+              <div key={post.id} style={highlight(post)}>
+                <ArticleCard
+                  post={post}
+                  category={categoryOf(post)}
+                  variant="featured-row"
+                  showExcerpt={false}
+                />
+              </div>
+            ))}
+          </section>
         </section>
 
         <section className="mb-20">

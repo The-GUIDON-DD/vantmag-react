@@ -45,7 +45,7 @@ function PostImage({
     displayedImage?.loading ?? (variant === "featured" ? "eager" : "lazy");
   // Match the wide image's height to the adjacent featured-row image on desktop.
   const shape = {
-    featured: "aspect-[16/5] lg:aspect-[875/312] xl:aspect-[25/8]",
+    featured: "aspect-[16/5] lg:aspect-[875/312] xl:aspect-[25/12]",
     "featured-row": "aspect-[16/5] lg:aspect-[7/6] xl:aspect-square",
     grid: "aspect-square lg:aspect-[11/6]",
     row: "aspect-[11/6]",
@@ -53,7 +53,7 @@ function PostImage({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded bg-slate-100 ${shape}`}
+      className={`article-card-image relative w-full overflow-hidden rounded bg-slate-100 ${shape}`}
     >
       {(!hasMedia || !isPending) && (
         <img
@@ -85,10 +85,10 @@ function CardMetadata({
   const hasAuthors = authors.length > 0;
   return (
     <p
-      className={`${compact ? "text-xs lg:text-sm" : "text-sm"} uppercase leading-tight text-[#737373] ${className}`}
+      className={`text-xs uppercase leading-tight text-[#737373] ${className}`}
     >
       {hasAuthors && (
-        <span className="font-bold lg:block [&_a]:relative [&_a]:z-2">
+        <span className="font-bold lg:block [&_a]:relative [&_a]:z-2 text-sm">
           By <Bylines authors={authors} />
         </span>
       )}
@@ -143,11 +143,11 @@ export default function ArticleCard({
       // Keep the image at the top if the row text is taller than the image.
       featuredClasses = {
         article:
-          "category-article -m-3 flex flex-col gap-5 rounded-lg p-3 lg:flex-row lg:items-center lg:gap-6",
+          "category-article -m-3 flex flex-col gap-5 rounded-lg p-3 lg:flex-row lg:items-stretch lg:gap-6",
         imageContainer:
           "block overflow-hidden rounded lg:w-[52%] lg:shrink-0 lg:self-start xl:w-[40%]",
         content: "min-w-0 flex-1",
-        heading: "text-lg font-bold leading-tight",
+        heading: "text-md font-bold leading-tight",
         byline: "mt-3",
       };
     }
