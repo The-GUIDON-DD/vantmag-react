@@ -8,9 +8,9 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "test": "vitest",
-    "format": "pnpx @biomejs/biome format --write ./",
-    "lint": "pnpx @biomejs/biome lint --write ./",
-    "check": "pnpx @biomejs/biome check",
+    "format": "pnpm biome format --write ./",
+    "lint": "pnpm biome lint --write ./",
+    "check": "pnpm biome check",
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && wrangler dev",
     "cf-typegen": "wrangler types"
