@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
+import ArticleSkeleton from "~/components/ArticleSkeleton";
 import ArticleCard from "~/components/article-card";
 import CategoryTabs from "~/components/category-tabs";
 import Hero from "~/components/hero";
 import SectionHeading from "~/components/section-heading";
-import { retrieveHomeData } from "~/fetchers";
+import { Spinner } from "~/components/ui/spinner";
+import { retrieveFeaturedPosts, retrieveHomeData } from "~/fetchers";
 import type { ArticleCardData } from "~/types";
 import { categories } from "../../constants";
+import PageNotFound from "./page-not-found";
 
 export function meta() {
   return [
@@ -24,25 +27,26 @@ function categoryOf(post: ArticleCardData) {
 }
 
 export default function Home() {
-  const { isPending, isError, error, data } = useQuery({
+  const { isPending, isError, data } = useQuery({
     queryKey: ["home"],
     queryFn: retrieveHomeData,
   });
 
+  const {
+    data: suggestions,
+    isPending: isSuggestionsPending,
+    isError: isSuggestionsError,
+  } = useQuery({
+    queryKey: ["home-suggested"],
+    queryFn: () => retrieveFeaturedPosts(6),
+  });
+
   if (isPending) {
-    return <p className="p-8">Loading articles...</p>;
+    return <ArticleSkeleton />;
   }
 
   if (isError || !data.hero) {
-    return (
-      <main className="mx-auto w-full max-w-[1240px] px-4 py-20 text-center">
-        <h1 className="mb-4 font-display text-4xl">Something went wrong</h1>
-        <p role="alert" className="text-gray-600">
-          We couldn't load the latest stories. Please try again.{" "}
-          {error?.message}
-        </p>
-      </main>
-    );
+    return <PageNotFound />;
   }
 
   // Tint each card's hover with its own category colour, the way the category
@@ -65,7 +69,7 @@ export default function Home() {
               <ArticleCard
                 post={post}
                 category={categoryOf(post)}
-                variant={ix === 0 ? "featured" : "row"}
+                variant={ix === 0 ? "featured" : "grid"}
                 showExcerpt={ix === 0}
               />
             </div>
@@ -74,8 +78,16 @@ export default function Home() {
 
         <section className="mb-20">
           <SectionHeading>Here is something for you.</SectionHeading>
+          {isSuggestionsError && (
+            <p className="w-full">Failed to retrieve suggested articles.</p>
+          )}
+          {isSuggestionsPending && (
+            <div className="w-full flex justify-center">
+              <Spinner />
+            </div>
+          )}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {data.suggestions.map((post) => (
+            {suggestions?.map((post) => (
               <div key={post.id} style={highlight(post)}>
                 <ArticleCard
                   post={post}

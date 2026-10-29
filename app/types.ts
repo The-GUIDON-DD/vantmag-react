@@ -48,9 +48,3 @@ export interface CategoryPostsPage {
   posts: ArticleCardData[];
   hasMore: boolean;
 }
-
-export interface HomeData {
-  hero: ArticleCardData | null;
-  latest: ArticleCardData[];
-  suggestions: ArticleCardData[];
-}
