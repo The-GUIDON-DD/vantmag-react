@@ -53,9 +53,8 @@ export default function CategoryTabs() {
             <span
               className="tab-icon"
               style={{
-                // The PNG chips mask cleanly; the SVGs carry their own fills.
-                maskImage: `url(${category.icon.replace(".svg", ".png")})`,
-                WebkitMaskImage: `url(${category.icon.replace(".svg", ".png")})`,
+                maskImage: `url(${category.icon})`,
+                WebkitMaskImage: `url(${category.icon})`,
               }}
             />
             {category.title}
