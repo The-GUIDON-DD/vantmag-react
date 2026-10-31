@@ -2,9 +2,12 @@ import { categories } from "./constants";
 import type { ArticleData } from "./types";
 
 export function categoryFromID(catID: number) {
+  if (catID < 0) {
+    return categories.other;
+  }
   const category = Object.values(categories).find(({ id }) => id === catID);
   if (!category) {
-    return Object.values(categories)[0];
+    return categories.other;
   } // temporary: replace with aldrin's other cat
   return category;
 }
