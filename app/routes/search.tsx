@@ -9,7 +9,7 @@ import {
   retrieveTagsFromSearch,
 } from "~/fetchers";
 import type { ArticleCardData } from "~/types";
-import { categories } from "../../constants";
+import { categories } from "../constants";
 
 // Match the number of articles in the original search layout.
 const PAGE_SIZE = 6;

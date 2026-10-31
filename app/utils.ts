@@ -1,4 +1,4 @@
-import { categories } from "../constants";
+import { categories } from "./constants";
 import type { ArticleData } from "./types";
 
 export function categoryFromID(catID: number) {

@@ -8,7 +8,7 @@ import SectionHeading from "~/components/section-heading";
 import { Spinner } from "~/components/ui/spinner";
 import { retrieveFeaturedPosts, retrieveHomeData } from "~/fetchers";
 import type { ArticleCardData } from "~/types";
-import { categories } from "../../constants";
+import { categories } from "../constants";
 import PageNotFound from "./page-not-found";
 
 export function meta() {
