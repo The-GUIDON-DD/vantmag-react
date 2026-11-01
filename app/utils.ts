@@ -40,7 +40,7 @@ export function plainTextFallback(html: string) {
  */
 export function plainText(html: string) {
   if (typeof DOMParser === "undefined" || !window.DOMParser || !DOMParser) {
-    plainTextFallback(html);
+    return plainTextFallback(html);
   }
 
   const document = new DOMParser().parseFromString(html, "text/html");
