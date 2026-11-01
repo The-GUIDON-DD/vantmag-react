@@ -12,9 +12,42 @@ export function categoryFromID(catID: number) {
   return category;
 }
 
+/*
+ * Fallback function for plainText if the DOMParser
+ * is not available. Strips all HTML tags from the
+ * string.
+ * @param {string} html - The raw HTML string.
+ */
+
+// self notes for first regex:
+// <(script|style)\b[^>]*> just means
+// match script/style as a word then match any characters (for attributes) then closing >
+export function plainTextFallback(html: string) {
+  let result = html
+    .replace(/<!--[\s\S]*?-->/g, "") // strips HTML comments
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ""); // strips text from inside <script> or <style> tags
+
+  // iteratively replace text inside of tags with the text inside
+  // This avoids cases like 'New <Meat> World' becoming 'New World'
+  let previous: string;
+  do {
+    previous = result;
+    result = result.replace(/<([a-zA-Z0-9-]+)[^>]*>([\s\S]*?)<\/\1>/gi, " $2 ");
+  } while (result !== previous);
+
+  // remove spaces before commans and contract spaces
+  return result.replace(/\s+,/g, ",").trim().replace(/\s+/g, " ");
+}
+
+/*
+ * Returns plaintext wrapped inside HTML/an HTML Element.
+ * Usually used to strip HTML from rendered titles/excerpts from the
+ * WordPress REST API.
+ * @param {string} html - The raw HTML string.
+ */
 export function plainText(html: string) {
-  if (typeof DOMParser === "undefined") {
-    return html.replace(/<[^>]*>/g, "");
+  if (typeof DOMParser === "undefined" || !window.DOMParser || !DOMParser) {
+    return plainTextFallback(html);
   }
 
   const document = new DOMParser().parseFromString(html, "text/html");

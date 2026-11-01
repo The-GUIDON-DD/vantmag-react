@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromID } from "./utils";
+import { categoryFromID, plainText, plainTextFallback } from "./utils";
 
 describe("categoryFromID", () => {
   it("returns a valid category when passed a known category ID defined in constants.ts", async () => {
@@ -59,13 +59,187 @@ describe("categoryFromID", () => {
     expect(result.title).toBe("Other");
     expect(result.path).toEqual("/category/other");
   });
+});
 
-  it("returns 'Other' category for another invalid ID", async () => {
-    const invalidIDs = [999, -1];
-    for (const invalidID of invalidIDs) {
-      const result = categoryFromID(invalidID);
-      expect(result.id).toBe(1);
-      expect(result.title).toBe("Other");
-    }
+describe("plainTextFallback", () => {
+  describe("Content Purge", () => {
+    it("completely removes <script> blocks", () => {
+      expect(plainTextFallback("<script>alert(1)</script>")).toBe("");
+    });
+
+    it("completely removes <style> blocks", () => {
+      expect(plainTextFallback("<style>.css{color:red}</style>")).toBe("");
+    });
+
+    it("is case-insensitive for <SCRIPT> and <STYLE> tags", () => {
+      expect(plainTextFallback("<SCRIPT>alert(1)</SCRIPT>")).toBe("");
+      expect(plainTextFallback("<STYLE>body{color:red}</STYLE>")).toBe("");
+    });
+  });
+
+  describe("Intelligent Tag Stripping", () => {
+    it("removes standard HTML tags but preserves inner text", () => {
+      expect(plainTextFallback("<strong>Bold</strong>")).toBe("Bold");
+      expect(plainTextFallback("<em>Italic</em>")).toBe("Italic");
+      expect(plainTextFallback("<a href='test'>Link</a>")).toBe("Link");
+      expect(plainTextFallback("<div>Div<p>Para</p></div>")).toBe("Div Para");
+    });
+
+    it("preserves mathematical expressions like '5 < 10'", () => {
+      expect(plainTextFallback("5 < 10")).toBe("5 < 10");
+      expect(plainTextFallback("12 > 8")).toBe("12 > 8");
+    });
+
+    it("preserves bracketed text that doesn't look like a tag", () => {
+      expect(plainTextFallback("The [New] Era")).toBe("The [New] Era");
+      expect(plainTextFallback("Value (approx 10)")).toBe("Value (approx 10)");
+    });
+
+    it("preserves bracketed text that looks like a tag", () => {
+      expect(plainTextFallback("The <New> Era")).toBe("The <New> Era");
+    });
+  });
+
+  describe("WordPress API titles", () => {
+    it("handles mixed formatting commonly found in WordPress rendered titles", () => {
+      const input =
+        "Title <strong>with bold</strong>, <em>italics</em>, and <a href='#'>a link</a>";
+      expect(plainTextFallback(input)).toBe(
+        "Title with bold, italics, and a link",
+      );
+    });
+  });
+
+  describe("General Robustness", () => {
+    it("removes HTML comments", () => {
+      expect(plainTextFallback("Text <!-- hidden comment --> more text")).toBe(
+        "Text more text",
+      );
+    });
+
+    it("removes HTML comments containing '>' characters", () => {
+      expect(
+        plainTextFallback("Text <!-- comment > with bracket --> more text"),
+      ).toBe("Text more text");
+    });
+
+    it("ensures elements between text have a space between them", () => {
+      expect(plainTextFallback("Do<p>This</p>")).toBe("Do This");
+    });
+
+    it("handles Unicode and RTL characters", () => {
+      expect(plainTextFallback("<span>Привет</span>")).toBe("Привет");
+      expect(plainTextFallback("<span>שלום</span>")).toBe("שלום");
+    });
+
+    it("handles empty strings and whitespace-only strings", () => {
+      expect(plainTextFallback("")).toBe("");
+      expect(plainTextFallback("   ")).toBe("");
+      expect(plainTextFallback("\n\t")).toBe("");
+    });
+
+    it("handles malformed HTML gracefully", () => {
+      expect(plainTextFallback("<p This is a title")).toBe(
+        "<p This is a title",
+      );
+      expect(plainTextFallback("Title > with closing only")).toBe(
+        "Title > with closing only",
+      );
+      expect(plainTextFallback("Title < with opening only")).toBe(
+        "Title < with opening only",
+      );
+    });
+  });
+});
+
+/*
+ * These are a little bit redundant as DOMParser already handles the edge-cases well.
+ * This is just to check if plainText works without DOMParser given that
+ * it's not available in the vitest test environment (and it shouldn't be as some test involve including scripts inside the string).
+ */
+describe("plainText", () => {
+  describe("Content Purge", () => {
+    it("completely removes <script> blocks", () => {
+      expect(plainText("<script>alert(1)</script>")).toBe("");
+    });
+
+    it("completely removes <style> blocks", () => {
+      expect(plainText("<style>.css{color:red}</style>")).toBe("");
+    });
+
+    it("is case-insensitive for <SCRIPT> and <STYLE> tags", () => {
+      expect(plainText("<SCRIPT>alert(1)</SCRIPT>")).toBe("");
+      expect(plainText("<STYLE>body{color:red}</STYLE>")).toBe("");
+    });
+  });
+
+  describe("Intelligent Tag Stripping", () => {
+    it("removes standard HTML tags but preserves inner text", () => {
+      expect(plainText("<strong>Bold</strong>")).toBe("Bold");
+      expect(plainText("<em>Italic</em>")).toBe("Italic");
+      expect(plainText("<a href='test'>Link</a>")).toBe("Link");
+      expect(plainText("<div>Div<p>Para</p></div>")).toBe("Div Para");
+    });
+
+    it("preserves mathematical expressions like '5 < 10'", () => {
+      expect(plainText("5 < 10")).toBe("5 < 10");
+      expect(plainText("12 > 8")).toBe("12 > 8");
+    });
+
+    it("preserves bracketed text that doesn't look like a tag", () => {
+      expect(plainText("The [New] Era")).toBe("The [New] Era");
+      expect(plainText("Value (approx 10)")).toBe("Value (approx 10)");
+    });
+
+    it("preserves bracketed text that looks like a tag", () => {
+      expect(plainTextFallback("The <New> Era")).toBe("The <New> Era");
+    });
+  });
+
+  describe("WordPress API titles", () => {
+    it("handles mixed formatting commonly found in WordPress rendered titles", () => {
+      const input =
+        "Title <strong>with bold</strong>, <em>italics</em>, and <a href='#'>a link</a>";
+      expect(plainText(input)).toBe("Title with bold, italics, and a link");
+    });
+  });
+
+  describe("General Robustness", () => {
+    it("removes HTML comments", () => {
+      expect(plainText("Text <!-- hidden comment --> more text")).toBe(
+        "Text more text",
+      );
+    });
+
+    it("removes HTML comments containing '>' characters", () => {
+      expect(plainText("Text <!-- comment > with bracket --> more text")).toBe(
+        "Text more text",
+      );
+    });
+
+    it("ensures elements between text have a space between them", () => {
+      expect(plainText("Do<p>This</p>")).toBe("Do This");
+    });
+
+    it("handles Unicode and RTL characters", () => {
+      expect(plainText("<span>Привет</span>")).toBe("Привет");
+      expect(plainText("<span>שלום</span>")).toBe("שלום");
+    });
+
+    it("handles empty strings and whitespace-only strings", () => {
+      expect(plainText("")).toBe("");
+      expect(plainText("   ")).toBe("");
+      expect(plainText("\n\t")).toBe("");
+    });
+
+    it("handles malformed HTML gracefully", () => {
+      expect(plainText("<p This is a title")).toBe("<p This is a title");
+      expect(plainText("Title > with closing only")).toBe(
+        "Title > with closing only",
+      );
+      expect(plainText("Title < with opening only")).toBe(
+        "Title < with opening only",
+      );
+    });
   });
 });

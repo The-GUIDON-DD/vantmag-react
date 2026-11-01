@@ -1,4 +1,5 @@
 ---
+
 name: concurrency-parallelism
 description: Concurrent tests, parallel execution, and sharding
 ---
@@ -14,14 +15,14 @@ defineConfig({
   test: {
     // Run files in parallel (default: true)
     fileParallelism: true,
-    
+
     // Max concurrent workers (v4: replaces maxThreads/maxForks; minWorkers removed)
     maxWorkers: 4,
-    
+
     // Pool type: 'forks' (default), 'threads', 'vmForks', 'vmThreads'
-    pool: 'forks',
+    pool: "forks",
   },
-})
+});
 ```
 
 > **v4 pool rework:** `poolOptions` was removed — all pool settings are now top-level. `singleThread`/`singleFork` become `maxWorkers: 1, isolate: false`. VM `memoryLimit` is `vmMemoryLimit`. These can now be set **per project**.
@@ -32,19 +33,19 @@ Run tests within a file in parallel:
 
 ```ts
 // Individual concurrent tests
-test.concurrent('test 1', async ({ expect }) => {
-  expect(await fetch1()).toBe('result')
-})
+test.concurrent("test 1", async ({ expect }) => {
+  expect(await fetch1()).toBe("result");
+});
 
-test.concurrent('test 2', async ({ expect }) => {
-  expect(await fetch2()).toBe('result')
-})
+test.concurrent("test 2", async ({ expect }) => {
+  expect(await fetch2()).toBe("result");
+});
 
 // All tests in suite concurrent
-describe.concurrent('parallel suite', () => {
-  test('test 1', async ({ expect }) => {})
-  test('test 2', async ({ expect }) => {})
-})
+describe.concurrent("parallel suite", () => {
+  test("test 1", async ({ expect }) => {});
+  test("test 2", async ({ expect }) => {});
+});
 ```
 
 **Important:** Use `{ expect }` from context for concurrent tests.
@@ -54,18 +55,18 @@ describe.concurrent('parallel suite', () => {
 `test.sequential`/`describe.sequential` were **removed in v5**. Use `{ concurrent: false }`:
 
 ```ts
-describe.concurrent('mostly parallel', () => {
-  test('parallel 1', async () => {})
+describe.concurrent("mostly parallel", () => {
+  test("parallel 1", async () => {});
 
   // Opt this test out of inherited concurrency
-  test('must run alone', { concurrent: false }, async () => {})
-})
+  test("must run alone", { concurrent: false }, async () => {});
+});
 
 // Or an entire suite
-describe('sequential suite', { concurrent: false }, () => {
-  test('first', () => {})
-  test('second', () => {})
-})
+describe("sequential suite", { concurrent: false }, () => {
+  test("first", () => {});
+  test("second", () => {});
+});
 ```
 
 Set `sequence.concurrent: true` to make all tests concurrent by default.
@@ -79,7 +80,7 @@ defineConfig({
   test: {
     maxConcurrency: 5, // Max concurrent tests per file
   },
-})
+});
 ```
 
 ## Isolation
@@ -92,7 +93,7 @@ defineConfig({
     // Disable isolation for faster runs (less safe)
     isolate: false,
   },
-})
+});
 ```
 
 ## Sharding
@@ -120,7 +121,7 @@ jobs:
         shard: [1, 2, 3]
     steps:
       - run: vitest run --shard=${{ matrix.shard }}/3 --reporter=blob
-      
+
   merge:
     needs: test
     steps:
@@ -148,13 +149,13 @@ defineConfig({
     sequence: {
       // Run tests in random order
       shuffle: true,
-      
+
       // Seed for reproducible shuffle
       seed: 12345,
-      
+
       // Hook execution order
-      hooks: 'stack', // 'stack', 'list', 'parallel'
-      
+      hooks: "stack", // 'stack', 'list', 'parallel'
+
       // All tests concurrent by default
       concurrent: true,
 
@@ -162,7 +163,7 @@ defineConfig({
       groupOrder: 0,
     },
   },
-})
+});
 ```
 
 ## Shuffle Tests
@@ -188,12 +189,12 @@ describe.shuffle('random order', () => {
 ```ts
 defineConfig({
   test: {
-    pool: 'forks',     // 'forks' (default) | 'threads' | 'vmForks' | 'vmThreads'
+    pool: "forks", // 'forks' (default) | 'threads' | 'vmForks' | 'vmThreads'
     maxWorkers: 8,
-    isolate: true,     // threads/forks only; vm* pools are always isolated
-    vmMemoryLimit: '512MB',
+    isolate: true, // threads/forks only; vm* pools are always isolated
+    vmMemoryLimit: "512MB",
   },
-})
+});
 ```
 
 For per-project parallelism/isolation settings, see [advanced-projects](advanced-projects.md).
