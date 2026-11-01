@@ -94,6 +94,10 @@ describe("plainTextFallback", () => {
       expect(plainTextFallback("The [New] Era")).toBe("The [New] Era");
       expect(plainTextFallback("Value (approx 10)")).toBe("Value (approx 10)");
     });
+
+    it("preserves bracketed text that looks like a tag", () => {
+      expect(plainTextFallback("The <New> Era")).toBe("The <New> Era");
+    });
   });
 
   describe("WordPress API titles", () => {
@@ -151,7 +155,7 @@ describe("plainTextFallback", () => {
 /*
  * These are a little bit redundant as DOMParser already handles the edge-cases well.
  * This is just to check if plainText works without DOMParser given that
- * it's not availble in the vitest test environment (and it shouldn't be as some test involve including scripts inside the string)
+ * it's not available in the vitest test environment (and it shouldn't be as some test involve including scripts inside the string).
  */
 describe("plainText", () => {
   describe("Content Purge", () => {
@@ -185,6 +189,10 @@ describe("plainText", () => {
     it("preserves bracketed text that doesn't look like a tag", () => {
       expect(plainText("The [New] Era")).toBe("The [New] Era");
       expect(plainText("Value (approx 10)")).toBe("Value (approx 10)");
+    });
+
+    it("preserves bracketed text that looks like a tag", () => {
+      expect(plainTextFallback("The <New> Era")).toBe("The <New> Era");
     });
   });
 

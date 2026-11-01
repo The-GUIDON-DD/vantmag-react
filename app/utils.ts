@@ -23,13 +23,20 @@ export function categoryFromID(catID: number) {
 // <(script|style)\b[^>]*> just means
 // match script/style as a word then match any characters (for attributes) then closing >
 export function plainTextFallback(html: string) {
-  return html
+  let result = html
     .replace(/<!--[\s\S]*?-->/g, "") // strips HTML comments
-    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "") // strips text from inside <script> or <style> tags
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+,/g, ",")
-    .trim()
-    .replace(/\s+/g, " ");
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ""); // strips text from inside <script> or <style> tags
+
+  // iteratively replace text inside of tags with the text inside
+  // This avoids cases like 'New <Meat> World' becoming 'New World'
+  let previous: string;
+  do {
+    previous = result;
+    result = result.replace(/<([a-zA-Z0-9-]+)[^>]*>([\s\S]*?)<\/\1>/gi, " $2 ");
+  } while (result !== previous);
+
+  // remove spaces before commans and contract spaces
+  return result.replace(/\s+,/g, ",").trim().replace(/\s+/g, " ");
 }
 
 /*
