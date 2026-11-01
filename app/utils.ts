@@ -12,12 +12,33 @@ export function categoryFromID(catID: number) {
   return category;
 }
 
-function plainTextFallback(html: string) {
-  return html.replace(/<[^>]*>/g, "");
+/*
+ * Fallback function for plainText if the DOMParser
+ * is not available. Strips all HTML tags from the
+ * string.
+ * @param {string} html - The raw HTML string.
+ */
+
+// self notes for first regex:
+// <(script|style)\b[^>]*> just means
+// match script/style as a word then match any characters (for attributes) then closing >
+export function plainTextFallback(html: string) {
+  return html
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "") // strips text from inside <script> or <style> tags
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
+/*
+ * Returns plaintext wrapped inside HTML/an HTML Element.
+ * Usually used to strip HTML from rendered titles/excerpts from the
+ * WordPress REST API.
+ * @param {string} html - The raw HTML string.
+ */
 export function plainText(html: string) {
-  if (typeof DOMParser === "undefined") {
+  if (typeof DOMParser === "undefined" || !window.DOMParser) {
     plainTextFallback(html);
   }
 
