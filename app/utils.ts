@@ -24,6 +24,7 @@ export function categoryFromID(catID: number) {
 // match script/style as a word then match any characters (for attributes) then closing >
 export function plainTextFallback(html: string) {
   return html
+    .replace(/<!--[\s\S]*?-->/g, "") // strips HTML comments
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "") // strips text from inside <script> or <style> tags
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+,/g, ",")
@@ -38,7 +39,7 @@ export function plainTextFallback(html: string) {
  * @param {string} html - The raw HTML string.
  */
 export function plainText(html: string) {
-  if (typeof DOMParser === "undefined" || !window.DOMParser) {
+  if (typeof DOMParser === "undefined" || !window.DOMParser || !DOMParser) {
     plainTextFallback(html);
   }
 

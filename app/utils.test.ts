@@ -113,6 +113,16 @@ describe("plainTextFallback", () => {
       );
     });
 
+    it("removes HTML comments containing '>' characters", () => {
+      expect(
+        plainTextFallback("Text <!-- comment > with bracket --> more text"),
+      ).toBe("Text more text");
+    });
+
+    it("ensures elements between text have a space between them", () => {
+      expect(plainTextFallback("Do<p>This</p>")).toBe("Do This");
+    });
+
     it("handles Unicode and RTL characters", () => {
       expect(plainTextFallback("<span>Привет</span>")).toBe("Привет");
       expect(plainTextFallback("<span>שלום</span>")).toBe("שלום");
