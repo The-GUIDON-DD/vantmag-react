@@ -12,9 +12,13 @@ export function categoryFromID(catID: number) {
   return category;
 }
 
+function plainTextFallback(html: string) {
+  return html.replace(/<[^>]*>/g, "");
+}
+
 export function plainText(html: string) {
   if (typeof DOMParser === "undefined") {
-    return html.replace(/<[^>]*>/g, "");
+    plainTextFallback(html);
   }
 
   const document = new DOMParser().parseFromString(html, "text/html");
