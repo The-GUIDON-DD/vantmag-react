@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { categories } from "../../constants";
+import { categories } from "../constants";
 import Chip from "./chip";
 
 const socmedLinks = [

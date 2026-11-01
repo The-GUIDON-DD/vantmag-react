@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
-import { categories, page_size_values } from "../../constants";
+import { categories, page_size_values } from "../constants";
 import { retrieveCategoryPosts } from "../fetchers";
 import ArticleCard from "./article-card";
 

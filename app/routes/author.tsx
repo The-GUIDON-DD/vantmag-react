@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import ArticleCard from "~/components/article-card";
 import { retrieveArticlesFromAuthor, retrieveAuthorFromSlug } from "~/fetchers";
 import type { ArticleCardData, Author } from "~/types";
-import { categories, page_size_values } from "../../constants";
+import { categories, page_size_values } from "../constants";
 import type { Route } from "./+types/author";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {

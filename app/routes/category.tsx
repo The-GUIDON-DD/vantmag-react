@@ -1,9 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
 import type { CategoryDetails } from "~/types";
-import { categories, page_size_values } from "../../constants";
 import ArticleCard from "../components/article-card";
 import ShowMore from "../components/show-more";
+import { categories, page_size_values } from "../constants";
 import { retrieveCategoryPosts } from "../fetchers";
 import type { Route } from "./+types/category";
 

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Chip from "~/components/chip";
-import { categories } from "../../constants";
+import { categories } from "../constants";
 
 export function meta() {
   return [

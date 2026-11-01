@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { categories, fallbackImage } from "../../constants";
+import { categories, fallbackImage } from "../constants";
 import { retrieveMediaFromID } from "../fetchers";
 import type { ArticleCardData } from "../types";
 import { parseImage, plainText } from "../utils";

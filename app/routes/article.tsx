@@ -13,7 +13,7 @@ import {
   retrieveRelatedArticles,
 } from "~/fetchers";
 import { categoryFromID, getSocMedUrlsFromArticle, parseImage } from "~/utils";
-import { categories } from "../../constants";
+import { categories } from "../constants";
 import type { Route } from "./+types/article";
 import PageNotFound from "./page-not-found";
 
