@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
+import { Spinner } from "~/components/ui/spinner";
+import type {
+  ArticleCardData,
+  CategoryDetails,
+  CategoryPostsPage,
+} from "~/types";
 import { categories, page_size_values } from "../constants";
 import { retrieveCategoryPosts } from "../fetchers";
 import ArticleCard from "./article-card";
@@ -22,6 +28,44 @@ const TAB_ORDER = [
 const tabs = TAB_ORDER.map((slug) => categories[slug]).filter(
   (category) => category !== undefined,
 );
+
+function TabContent({
+  isPending,
+  isError,
+  active,
+  data,
+}: {
+  isPending: boolean;
+  isError: boolean;
+  active: CategoryDetails;
+  data: CategoryPostsPage | undefined;
+}) {
+  if (isPending) {
+    return (
+      <div className="w-full flex justify-center mb-20">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (isError || !data || typeof data === "undefined") {
+    return <p className="w-full">Failed to retrieve category articles.</p>;
+  }
+
+  return (
+    <div className="mb-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {data?.posts.map((post) => (
+        <ArticleCard
+          key={post.id}
+          post={post}
+          category={active}
+          variant="grid"
+          showCategory={false}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function CategoryTabs() {
   const [active, setActive] = useState(tabs[0]);
@@ -62,23 +106,12 @@ export default function CategoryTabs() {
         ))}
       </div>
 
-      {isError ? (
-        <p className="text-gray-500">Could not load {active.title} articles.</p>
-      ) : isPending ? (
-        <p className="mb-10 text-gray-500">Loading articles...</p>
-      ) : (
-        <div className="mb-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {data.posts.map((post) => (
-            <ArticleCard
-              key={post.id}
-              post={post}
-              category={active}
-              variant="grid"
-              showCategory={false}
-            />
-          ))}
-        </div>
-      )}
+      <TabContent
+        isError={isError}
+        isPending={isPending}
+        active={active}
+        data={data}
+      />
 
       {/* The original site links through to the category archive here rather
           than paginating in place. */}

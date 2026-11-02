@@ -145,8 +145,8 @@ export default function Search() {
     queryFn: ({ pageParam }) =>
       retrieveArticlesFromSearch(term, pageParam, PAGE_SIZE),
     getNextPageParam: (lastPage, pages) =>
-      lastPage.hasMore && pages
-        ? pages.reduce((count, page) => count + (page.posts?.length ?? 0), 0)
+      lastPage.hasMore && pages && typeof pages !== "undefined"
+        ? pages.reduce((count, page) => count + (page?.posts?.length ?? 0), 0)
         : null,
     enabled: hasQuery,
   });

@@ -19,7 +19,7 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ["category-posts", category.id],
+    queryKey: ["category-posts", "category-page", category.id],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
       retrieveCategoryPosts(
@@ -30,8 +30,8 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
           : page_size_values.MORE_PAGE_SIZE,
       ),
     getNextPageParam: (lastPage, pages) =>
-      lastPage.hasMore && pages
-        ? pages.reduce((count, page) => count + (page.posts?.length ?? 0), 0)
+      lastPage.hasMore && pages && typeof pages !== "undefined"
+        ? pages.reduce((count, page) => count + (page?.posts?.length ?? 0), 0)
         : null,
   });
 
