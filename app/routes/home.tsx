@@ -45,7 +45,7 @@ export default function Home() {
     return <ArticleSkeleton />;
   }
 
-  if (isError || !data.hero) {
+  if (isError || !data.hero || !data) {
     return <PageNotFound />;
   }
 
@@ -73,7 +73,7 @@ export default function Home() {
             />
           </div>
           <section className="latest-grid-tall-images size-full flex flex-col items-stretch gap-12">
-            {data.latest.slice(1, 3).map((post) => (
+            {data?.latest.slice(1, 3).map((post) => (
               <div key={post.id} style={highlight(post)}>
                 <ArticleCard
                   post={post}
@@ -85,7 +85,7 @@ export default function Home() {
             ))}
           </section>
           <section className="latest-grid-small-images size-full flex flex-col items-stretch gap-6">
-            {data.latest.slice(3).map((post) => (
+            {data?.latest.slice(3).map((post) => (
               <div key={post.id} style={highlight(post)}>
                 <ArticleCard
                   post={post}
@@ -108,17 +108,19 @@ export default function Home() {
               <Spinner />
             </div>
           )}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {suggestions?.map((post) => (
-              <div key={post.id} style={highlight(post)}>
-                <ArticleCard
-                  post={post}
-                  category={categoryOf(post)}
-                  variant="grid"
-                />
-              </div>
-            ))}
-          </div>
+          {suggestions && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {suggestions?.map((post) => (
+                <div key={post.id} style={highlight(post)}>
+                  <ArticleCard
+                    post={post}
+                    category={categoryOf(post)}
+                    variant="grid"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section>
