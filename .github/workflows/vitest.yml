@@ -1,15 +1,12 @@
 name: Test
-
 on:
   pull_request:
-
 jobs:
   vitest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/setup@v1
         with:
@@ -17,9 +14,7 @@ jobs:
           run-time: node@22 # Automatically installs Node.js
           cache: true
           run_install: false
-
       - name: Install Dependencies
         run: pnpm ci
-
       - name: Run vitest
-        run: pnpm exec vitest run --coverage --reporter=default --reporter=github-actions
+        run: pnpm exec vitest run --reporter=default --reporter=github-actions
