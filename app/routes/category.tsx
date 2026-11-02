@@ -1,11 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
+import ArticleSkeleton from "~/components/ArticleSkeleton";
 import type { CategoryDetails } from "~/types";
 import ArticleCard from "../components/article-card";
 import ShowMore from "../components/show-more";
 import { categories, page_size_values } from "../constants";
 import { retrieveCategoryPosts } from "../fetchers";
 import type { Route } from "./+types/category";
+import PageNotFound from "./page-not-found";
 
 function CategoryContent({ category }: { category: CategoryDetails }) {
   const {
@@ -31,22 +33,15 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
     getNextPageParam: (lastPage, pages) =>
       lastPage.hasMore
         ? pages.reduce((count, page) => count + page.posts.length, 0)
-        : undefined,
+        : 0,
   });
 
   if (isPending) {
-    return <p className="p-8">Loading articles...</p>;
+    return <ArticleSkeleton />;
   }
 
   if (isError && !data) {
-    return (
-      <p
-        role="alert"
-        className="mx-auto w-full max-w-[1240px] px-4 py-12 lg:w-[85%] lg:px-5"
-      >
-        Could not load articles. Please try again. {error.message}
-      </p>
-    );
+    return <PageNotFound />;
   }
 
   const posts = data.pages.flatMap((page) => page.posts);
@@ -59,7 +54,7 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
 
   return (
     <div
-      className="mx-auto w-full max-w-[1240px] px-4 pt-6 pb-20 lg:w-[90%] lg:px-5 lg:pt-10"
+      className="mx-auto w-full max-w-[1380px] px-4 pt-6 pb-20 lg:w-[90%] lg:px-5 lg:pt-10"
       style={highlightStyle}
     >
       {featuredPosts.length > 0 ? (
