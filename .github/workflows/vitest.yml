@@ -1,20 +1,21 @@
-name: Run unit tests
- 
+name: Test
+
 on:
   pull_request:
 
- 
 jobs:
   vitest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
- 
+
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
- 
-      - run: pnpm ci
- 
-      - run: pnpm exec vitest run --coverage --reporter=default --reporter=github-actions
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm vitest run --coverage --reporter=default --reporter=github-actions
