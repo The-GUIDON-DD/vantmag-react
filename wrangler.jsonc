@@ -3,8 +3,24 @@
   "name": "vantmag-react",
   "main": "./workers/app.ts",
   "compatibility_date": "2026-08-10",
+  "previews": {},
   "observability": {
-    "enabled": true
-  },
-  "previews": {}
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": false,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": false,
+      "head_sampling_rate": 1,
+      "persist": true
+    },
+    "issue_detection": {
+      "enabled": true
+    }
+  }
 }
