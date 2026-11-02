@@ -74,9 +74,7 @@ export default function Article({ params }: Route.ComponentProps) {
     enabled: !!mediaID,
   });
 
-  const mediaAttrs = media
-    ? parseImage(media)
-    : { src: "/default_image.webp", alt: "Vantage Magazine" };
+  const mediaAttrs = media ? parseImage(media) : undefined;
 
   const articleID = data?.id;
   const {
@@ -145,13 +143,17 @@ export default function Article({ params }: Route.ComponentProps) {
               </section>
             </section>
           </section>
-          <section className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured">
-            <img
-              alt="Vantage Magazine"
-              src="/default_image.webp"
-              className="w-full object-cover min-h-full min-w-full"
-              {...mediaAttrs}
-            />
+          <section className="bg-[url('/default_image.webp')] bg-vant-purple bg-contain bg-no-repeat bg-center lg:min-h-150 w-full lg:w-1/2 article-featured">
+            {mediaAttrs && (
+              <img
+                src={mediaAttrs.src}
+                alt={mediaAttrs.alt}
+                srcSet={mediaAttrs.srcSet}
+                sizes={mediaAttrs.sizes}
+                loading={mediaAttrs.loading}
+                className="w-full object-cover min-h-full min-w-full"
+              />
+            )}
           </section>
         </section>
         <section className="bg-vant-purple px-6 lg:px-[5%] py-8 text-white flex flex-col gap-2 text-md lg:text-xl">
