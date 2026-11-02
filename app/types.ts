@@ -1,4 +1,4 @@
-const WPJSON_BASE = "https://api.vantage.theguidon.com/wp-json";
+const WPJSON_BASE = "https://api-vantage.theguidon.com/wp-json";
 export const BASE_URL = `${WPJSON_BASE}/wp/v2`;
 export const CUSTOM_URL = `${WPJSON_BASE}/custom/v1`;
 
