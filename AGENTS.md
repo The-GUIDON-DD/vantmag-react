@@ -19,6 +19,12 @@ Backend
 
   Testing Conventions
 
+- Unit tests for `app/fetchers.ts` must verify:
+  - Correct return type on successful fetch.
+  - Errors are thrown on failed fetches or non-ok responses.
+  - Invalid parameters (e.g., negative offsets) throw errors before calling `fetch`.
+  - Fetch URL parameters are correct according to the function's purpose.
+  - A "valid category" is defined as any category whose ID is present in the `categories` constant in `app/constants.ts`.
 - Integration test prerequisites: verify docker-compose.yml or infra services if tests need background processes
 - Flaky suite markers: look for flags like --update-snap, skipOnSlow, or CI environment markers in test files or scripts
 - Coverage threshold: check .codeclimate.jsonc or similar CI gates in GitHub Actions
