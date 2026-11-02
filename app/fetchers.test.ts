@@ -51,7 +51,7 @@ describe("retrieveArticleFromSlug", () => {
 
   const mockApiArticle = {
     id: 1,
-    title: { rendered: "Test Article" },
+    title: "Test Article",
     slug: "test-article",
     authors: [
       {
@@ -63,7 +63,7 @@ describe("retrieveArticleFromSlug", () => {
     categories: [5],
     featured_media: 100,
     date: "2023-10-01T10:00:00Z",
-    excerpt: { rendered: "Test excerpt" },
+    excerpt: "Test excerpt",
     content: { rendered: "Test content" },
   };
 
@@ -138,33 +138,33 @@ describe("retrieveRelatedArticles", () => {
   const mockApiRelatedPosts = [
     {
       id: 1,
-      title: { rendered: "Related 1" },
+      title: "Related 1",
       slug: "related-1",
       authors: [],
       categories: [10],
       featured_media: 101,
       date: "2023-10-02T10:00:00Z",
-      excerpt: { rendered: "Excerpt 1" },
+      excerpt: "Excerpt 1",
     },
     {
       id: 2,
-      title: { rendered: "Related 2" },
+      title: "Related 2",
       slug: "related-2",
       authors: [],
       categories: [10],
       featured_media: 102,
       date: "2023-10-03T10:00:00Z",
-      excerpt: { rendered: "Excerpt 2" },
+      excerpt: "Excerpt 2",
     },
     {
       id: 3,
-      title: { rendered: "Related 3" },
+      title: "Related 3",
       slug: "related-3",
       authors: [],
       categories: [10],
       featured_media: 103,
       date: "2023-10-04T10:00:00Z",
-      excerpt: { rendered: "Excerpt 3" },
+      excerpt: "Excerpt 3",
     },
   ];
 
@@ -270,33 +270,33 @@ describe("retrieveCategoryPosts", () => {
   const mockApiPosts = [
     {
       id: 1,
-      title: { rendered: "Post 1" },
+      title: "Post 1",
       slug: "post-1",
       authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
       categories: [13],
       featured_media: 100,
       date: "2023-10-01T10:00:00Z",
-      excerpt: { rendered: "Excerpt 1" },
+      excerpt: "Excerpt 1",
     },
     {
       id: 2,
-      title: { rendered: "Post 2" },
+      title: "Post 2",
       slug: "post-2",
       authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
       categories: [13],
       featured_media: 101,
       date: "2023-10-02T10:00:00Z",
-      excerpt: { rendered: "Excerpt 2" },
+      excerpt: "Excerpt 2",
     },
     {
       id: 3,
-      title: { rendered: "Post 3" },
+      title: "Post 3",
       slug: "post-3",
       authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
       categories: [13],
       featured_media: 102,
       date: "2023-10-03T10:00:00Z",
-      excerpt: { rendered: "Excerpt 3" },
+      excerpt: "Excerpt 3",
     },
   ];
 
@@ -479,23 +479,23 @@ describe("retrieveArticlesFromAuthor", () => {
   const mockApiPosts = [
     {
       id: 1,
-      title: { rendered: "Author Post 1" },
+      title: "Author Post 1",
       slug: "author-post-1",
       authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
       categories: [13],
       featured_media: 100,
       date: "2023-10-01T10:00:00Z",
-      excerpt: { rendered: "Excerpt 1" },
+      excerpt: "Excerpt 1",
     },
     {
       id: 2,
-      title: { rendered: "Author Post 2" },
+      title: "Author Post 2",
       slug: "author-post-2",
       authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
       categories: [13],
       featured_media: 101,
       date: "2023-10-02T10:00:00Z",
-      excerpt: { rendered: "Excerpt 2" },
+      excerpt: "Excerpt 2",
     },
   ];
 
