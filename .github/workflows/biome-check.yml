@@ -1,20 +1,16 @@
 name: Code Quality Check
-
 on:
   push:
     branches: [main, staging]
   pull_request:
     branches: [main, staging]
-
 jobs:
-  biome-check:
-    name: Run Biome Check
+  biome-knip-check:
+    name: Run Code Quality Check
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/setup@v1
         with:
@@ -22,9 +18,11 @@ jobs:
           run-time: node@22 # Automatically installs Node.js
           cache: true
           run_install: false
-
       - name: Install Dependencies
         run: pnpm ci
-
+      - name: Generate React Router Types
+        run: pnpm typecheck
+      - name: Run Knip CI
+        run: pnpm knip --cache --reporter github-actions
       - name: Run Biome CI
         run: pnpm biome ci . --reporter=github
