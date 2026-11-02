@@ -235,6 +235,15 @@ export async function retrieveArticlesFromAuthor(
   offset: number,
   pageSize: number,
 ): Promise<{ posts: Array<ArticleCardData>; hasMore: boolean }> {
+  if (author_id <= 0) {
+    throw new Error(`Invalid author ID: ${author_id}`);
+  }
+  if (offset < 0) {
+    throw new Error(`Offset must be non-negative: ${offset}`);
+  }
+  if (pageSize <= 0) {
+    throw new Error(`Page size must be greater than zero: ${pageSize}`);
+  }
   const fields = [
     "id",
     "slug",

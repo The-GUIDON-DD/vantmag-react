@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   retrieveArticleFromSlug,
+  retrieveArticlesFromAuthor,
   retrieveAuthorFromSlug,
   retrieveCategoryPosts,
   retrieveMediaFromID,
@@ -322,5 +323,131 @@ describe("retrieveAuthorFromSlug", () => {
     expect(calledUrl.pathname.endsWith("/ppma_author")).toBe(true);
     expect(calledUrl.searchParams.get("slug")).toBe(slug);
     expect(calledUrl.searchParams.get("_fields")).toBe("id,name,slug");
+  });
+});
+
+describe("retrieveArticlesFromAuthor", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  const mockApiPosts = [
+    {
+      id: 1,
+      title: { rendered: "Author Post 1" },
+      slug: "author-post-1",
+      authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
+      categories: [13],
+      featured_media: 100,
+      date: "2023-10-01T10:00:00Z",
+      excerpt: { rendered: "Excerpt 1" },
+    },
+    {
+      id: 2,
+      title: { rendered: "Author Post 2" },
+      slug: "author-post-2",
+      authors: [{ term_id: 10, display_name: "Author 1", slug: "author-1" }],
+      categories: [13],
+      featured_media: 101,
+      date: "2023-10-02T10:00:00Z",
+      excerpt: { rendered: "Excerpt 2" },
+    },
+  ];
+
+  it("throws an error for an invalid author ID before calling fetch", async () => {
+    const invalidId = 0;
+    await expect(retrieveArticlesFromAuthor(invalidId, 0, 2)).rejects.toThrow(
+      `Invalid author ID: ${invalidId}`,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("throws an error for a negative offset before calling fetch", async () => {
+    const invalidOffset = -1;
+    await expect(
+      retrieveArticlesFromAuthor(10, invalidOffset, 2),
+    ).rejects.toThrow(`Offset must be non-negative: ${invalidOffset}`);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("throws an error for a non-positive page size before calling fetch", async () => {
+    const invalidPageSize = 0;
+    await expect(
+      retrieveArticlesFromAuthor(10, 0, invalidPageSize),
+    ).rejects.toThrow(
+      `Page size must be greater than zero: ${invalidPageSize}`,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("calls the WordPress API with the correct parameters", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "X-WP-TotalPages": "1" }),
+      json: async () => [],
+    } as Response);
+
+    const authorId = 10;
+    const offset = 0;
+    const pageSize = 5;
+    await retrieveArticlesFromAuthor(authorId, offset, pageSize);
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.pathname.endsWith("/posts")).toBe(true);
+    expect(calledUrl.searchParams.get("ppma_author")).toBe(String(authorId));
+    expect(calledUrl.searchParams.get("offset")).toBe(String(offset));
+    expect(calledUrl.searchParams.get("per_page")).toBe(String(pageSize + 1));
+    expect(calledUrl.searchParams.get("orderby")).toBe("date");
+    expect(calledUrl.searchParams.get("order")).toBe("desc");
+    expect(calledUrl.searchParams.get("_fields")).toContain("id");
+    expect(calledUrl.searchParams.get("_fields")).toContain("slug");
+  });
+
+  it("returns posts and correctly calculates hasMore", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "X-WP-TotalPages": "2" }),
+      json: async () => mockApiPosts,
+    } as Response);
+
+    const result = await retrieveArticlesFromAuthor(10, 0, 2);
+
+    expect(result.posts).toHaveLength(2);
+    expect(result.posts[0].title).toBe("Author Post 1");
+    expect(result.hasMore).toBe(true);
+  });
+
+  it("returns hasMore = false when on the last page", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "X-WP-TotalPages": "1" }),
+      json: async () => mockApiPosts,
+    } as Response);
+
+    const result = await retrieveArticlesFromAuthor(10, 0, 2);
+    expect(result.hasMore).toBe(false);
+  });
+
+  it("returns an error if the fetch fails to resolve", async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("Network failure"));
+
+    await expect(retrieveArticlesFromAuthor(10, 0, 2)).rejects.toThrow(
+      "Network failure",
+    );
+  });
+
+  it("returns an error if the fetch response is not ok", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ message: "Internal Server Error" }),
+    } as Response);
+
+    // retrieveArticlesFromAuthor doesn't check response.ok, it calls .json()
+    // and then zod parses it. Zod will throw because it expects an array.
+    await expect(retrieveArticlesFromAuthor(10, 0, 2)).rejects.toThrow();
   });
 });
