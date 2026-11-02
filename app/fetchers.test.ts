@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   retrieveArticleFromSlug,
+  retrieveAuthorFromSlug,
   retrieveCategoryPosts,
   retrieveMediaFromID,
 } from "./fetchers";
@@ -243,5 +244,83 @@ describe("retrieveCategoryPosts", () => {
     await expect(retrieveCategoryPosts(13, 0, 2)).rejects.toThrow(
       "Could not load articles (500)",
     );
+  });
+});
+
+describe("retrieveAuthorFromSlug", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  const mockApiAuthor = {
+    id: 10,
+    name: "Test Author",
+    slug: "test-author",
+  };
+
+  it("returns an error if the fetch fails to resolve", async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("Network failure"));
+
+    await expect(retrieveAuthorFromSlug("test-author")).rejects.toThrow(
+      "Network failure",
+    );
+  });
+
+  it("returns an error if the fetch response is not ok", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      json: async () => ({
+        code: "rest_user_invalid_data",
+        message: "Invalid data",
+      }),
+    } as Response);
+
+    // Zod will throw a validation error even if the response is not 200
+    await expect(retrieveAuthorFromSlug("test-author")).rejects.toThrow();
+  });
+
+  it("returns the correct Author data on success", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [mockApiAuthor],
+    } as Response);
+
+    const result = await retrieveAuthorFromSlug("test-author");
+
+    expect(result).toEqual({
+      id: 10,
+      display_name: "Test Author",
+      slug: "test-author",
+    });
+  });
+
+  it("returns an error if no author is found (empty array)", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    } as Response);
+
+    await expect(retrieveAuthorFromSlug("non-existent")).rejects.toThrow(
+      "Author not found.",
+    );
+  });
+
+  it("calls the WordPress API with the correct parameters", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [mockApiAuthor],
+    } as Response);
+
+    const slug = "test-author";
+    await retrieveAuthorFromSlug(slug);
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.pathname.endsWith("/ppma_author")).toBe(true);
+    expect(calledUrl.searchParams.get("slug")).toBe(slug);
+    expect(calledUrl.searchParams.get("_fields")).toBe("id,name,slug");
   });
 });
