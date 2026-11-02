@@ -12,7 +12,6 @@ import PageNotFound from "./page-not-found";
 function CategoryContent({ category }: { category: CategoryDetails }) {
   const {
     data,
-    error,
     isPending,
     isError,
     isFetchNextPageError,
@@ -31,8 +30,8 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
           : page_size_values.MORE_PAGE_SIZE,
       ),
     getNextPageParam: (lastPage, pages) =>
-      lastPage.hasMore
-        ? pages.reduce((count, page) => count + page.posts.length, 0)
+      lastPage.hasMore && pages
+        ? pages.reduce((count, page) => count + (page.posts?.length ?? 0), 0)
         : null,
   });
 
