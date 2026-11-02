@@ -1,4 +1,4 @@
-import type { CategoryDetails } from "./app/types";
+import type { CategoryDetails } from "./types";
 
 export const fallbackImage = "/default_image.webp";
 
