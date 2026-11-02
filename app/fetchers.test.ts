@@ -5,6 +5,7 @@ import {
   retrieveAuthorFromSlug,
   retrieveCategoryPosts,
   retrieveMediaFromID,
+  retrieveRelatedArticles,
 } from "./fetchers";
 
 describe("retrieveMediaFromID", () => {
@@ -114,6 +115,150 @@ describe("retrieveArticleFromSlug", () => {
     } as Response);
 
     await expect(retrieveArticleFromSlug("non-existent")).rejects.toThrow();
+  });
+});
+
+describe("retrieveRelatedArticles", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  const mockArticle = {
+    id: 123,
+    title: "Main Article",
+    slug: "main-article",
+    authors: [],
+    featured_media: 456,
+    category: 13,
+    pubDate: "2023-10-01",
+    excerpt: "Excerpt",
+    content: "Content",
+  };
+
+  const mockApiRelatedPosts = [
+    {
+      id: 1,
+      title: { rendered: "Related 1" },
+      slug: "related-1",
+      authors: [],
+      categories: [10],
+      featured_media: 101,
+      date: "2023-10-02T10:00:00Z",
+      excerpt: { rendered: "Excerpt 1" },
+    },
+    {
+      id: 2,
+      title: { rendered: "Related 2" },
+      slug: "related-2",
+      authors: [],
+      categories: [10],
+      featured_media: 102,
+      date: "2023-10-03T10:00:00Z",
+      excerpt: { rendered: "Excerpt 2" },
+    },
+    {
+      id: 3,
+      title: { rendered: "Related 3" },
+      slug: "related-3",
+      authors: [],
+      categories: [10],
+      featured_media: 103,
+      date: "2023-10-04T10:00:00Z",
+      excerpt: { rendered: "Excerpt 3" },
+    },
+  ];
+
+  it("throws an error if article id is invalid", async () => {
+    await expect(
+      retrieveRelatedArticles({ ...mockArticle, id: 0 }),
+    ).rejects.toThrow("Invalid article ID: 0");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("omits the categories parameter if the category ID is not valid", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    } as Response);
+
+    // 999 is not defined in categories
+    await retrieveRelatedArticles({ ...mockArticle, category: 999 });
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.searchParams.get("categories")).toBeNull();
+  });
+
+  it("includes the categories parameter if the category ID is valid", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    } as Response);
+
+    // 13 is a valid category (TV & Film)
+    const validCategory = 13;
+    await retrieveRelatedArticles({ ...mockArticle, category: validCategory });
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.searchParams.get("categories")).toBe(
+      String(validCategory),
+    );
+  });
+
+  it("calls the WordPress API with the correct parameters", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    } as Response);
+
+    await retrieveRelatedArticles(mockArticle);
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.pathname.endsWith("/posts")).toBe(true);
+    expect(calledUrl.searchParams.get("categories")).toBe(
+      String(mockArticle.category),
+    );
+    expect(calledUrl.searchParams.get("exclude")).toBe(String(mockArticle.id));
+    expect(calledUrl.searchParams.get("per_page")).toBe("3");
+    expect(calledUrl.searchParams.get("fields")).toBeDefined();
+  });
+
+  it("returns the correct related articles on success", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockApiRelatedPosts,
+    } as Response);
+
+    const result = await retrieveRelatedArticles(mockArticle);
+
+    expect(result).toHaveLength(3);
+    expect(result[0].title).toBe("Related 1");
+    expect(result[0].id).toBe(1);
+    // Verify the result does not include the original article
+    expect(result.find((a) => a.id === mockArticle.id)).toBeUndefined();
+    expect(result.find((a) => a.slug === mockArticle.slug)).toBeUndefined();
+  });
+
+  it("returns an error if the fetch fails", async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("Network failure"));
+
+    await expect(retrieveRelatedArticles(mockArticle)).rejects.toThrow(
+      "Network failure",
+    );
+  });
+
+  it("returns an error if the fetch response is not ok", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ message: "Server Error" }),
+    } as Response);
+
+    // Zod will throw a validation error
+    await expect(retrieveRelatedArticles(mockArticle)).rejects.toThrow();
   });
 });
 
