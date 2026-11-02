@@ -54,16 +54,6 @@ export function plainText(html: string) {
   return document.body.textContent?.trim() ?? "";
 }
 
-export function postDate(date: string) {
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
-}
-
 export function parseImage(html: string | null) {
   if (!html || typeof DOMParser === "undefined") return null;
 
