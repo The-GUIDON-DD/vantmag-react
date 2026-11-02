@@ -153,6 +153,30 @@ describe("retrieveCategoryPosts", () => {
     },
   ];
 
+  it("throws an error for an invalid category ID before calling fetch", async () => {
+    const invalidId = 999;
+    await expect(retrieveCategoryPosts(invalidId, 0, 2)).rejects.toThrow(
+      `Invalid category ID: ${invalidId}`,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("throws an error for a negative offset before calling fetch", async () => {
+    const invalidOffset = -1;
+    await expect(retrieveCategoryPosts(13, invalidOffset, 2)).rejects.toThrow(
+      `Offset must be non-negative: ${invalidOffset}`,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("throws an error for a non-positive page size before calling fetch", async () => {
+    const invalidPageSize = 0;
+    await expect(retrieveCategoryPosts(13, 0, invalidPageSize)).rejects.toThrow(
+      `Page size must be greater than zero: ${invalidPageSize}`,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("returns posts and correctly calculates hasMore = true", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
@@ -181,7 +205,7 @@ describe("retrieveCategoryPosts", () => {
     expect(result.hasMore).toBe(false);
   });
 
-  it("returns posts and correctly calculates hasMore = false (beyond total pages)", async () => {
+  it("returns posts and correctly calculates hasMore = false (beyond totalPages)", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -202,39 +226,6 @@ describe("retrieveCategoryPosts", () => {
 
     await expect(retrieveCategoryPosts(13, 0, 2)).rejects.toThrow(
       "Could not load articles (500)",
-    );
-  });
-
-  it("returns an error for an invalid category ID (simulated 404)", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-    } as Response);
-
-    await expect(retrieveCategoryPosts(999, 0, 2)).rejects.toThrow(
-      "Could not load articles (404)",
-    );
-  });
-
-  it("returns an error for an invalid offset (simulated 400)", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    } as Response);
-
-    await expect(retrieveCategoryPosts(13, -1, 2)).rejects.toThrow(
-      "Could not load articles (400)",
-    );
-  });
-
-  it("returns an error for an invalid pageSize (simulated 400)", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    } as Response);
-
-    await expect(retrieveCategoryPosts(13, 0, -1)).rejects.toThrow(
-      "Could not load articles (400)",
     );
   });
 });
