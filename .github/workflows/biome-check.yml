@@ -20,6 +20,8 @@ jobs:
           run_install: false
       - name: Install Dependencies
         run: pnpm ci
+      - name: Generate React Router Types
+        run: pnpm typecheck
       - name: Run Knip CI
         run: pnpm knip --cache --reporter github-actions
       - name: Run Biome CI
