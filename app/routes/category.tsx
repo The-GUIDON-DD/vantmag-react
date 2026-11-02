@@ -33,7 +33,7 @@ function CategoryContent({ category }: { category: CategoryDetails }) {
     getNextPageParam: (lastPage, pages) =>
       lastPage.hasMore
         ? pages.reduce((count, page) => count + page.posts.length, 0)
-        : 0,
+        : null,
   });
 
   if (isPending) {

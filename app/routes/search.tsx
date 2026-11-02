@@ -147,7 +147,7 @@ export default function Search() {
     getNextPageParam: (lastPage, pages) =>
       lastPage.hasMore
         ? pages.reduce((count, page) => count + page.posts.length, 0)
-        : 0,
+        : null,
     enabled: hasQuery,
   });
 
