@@ -177,6 +177,22 @@ describe("retrieveCategoryPosts", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("calls the WordPress API with the correct categoryID", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "X-WP-TotalPages": "1" }),
+      json: async () => [],
+    } as Response);
+
+    const categoryId = 13;
+    await retrieveCategoryPosts(categoryId, 0, 2);
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as URL;
+    expect(calledUrl.pathname.endsWith("/posts")).toBe(true);
+    expect(calledUrl.searchParams.get("categories")).toBe(String(categoryId));
+  });
+
   it("returns posts and correctly calculates hasMore = true", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
