@@ -145,7 +145,7 @@ export default function Article({ params }: Route.ComponentProps) {
               </section>
             </section>
           </section>
-          <section className="bg-blue-300 lg:min-h-150 w-full lg:w-1/2 article-featured">
+          <section className="bg-[url('/default_image.webp')] lg:min-h-150 w-full lg:w-1/2 article-featured">
             <img
               alt="Vantage Magazine"
               src="/default_image.webp"
