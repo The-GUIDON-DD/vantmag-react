@@ -188,6 +188,14 @@ export async function retrieveArticleFromSlug(
 export async function retrieveRelatedArticles(
   article: ArticleData,
 ): Promise<Array<ArticleCardData>> {
+  if (!article.id || article.id <= 0) {
+    throw new Error(`Invalid article ID: ${article.id}`);
+  }
+
+  const categoryIsValid = Object.values(categories).some(
+    (cat) => cat.id === article.category,
+  );
+
   const fields = [
     "id",
     "slug",
@@ -198,7 +206,9 @@ export async function retrieveRelatedArticles(
     "featured_media",
   ];
   const url = new URL(`${BASE_URL}/posts`);
-  url.searchParams.set("categories", String(article.category));
+  if (categoryIsValid) {
+    url.searchParams.set("categories", String(article.category));
+  }
   url.searchParams.set("exclude", String(article.id));
   url.searchParams.set("per_page", String(3));
   url.searchParams.set("fields", fields.join(","));
