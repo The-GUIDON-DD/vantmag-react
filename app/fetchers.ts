@@ -23,13 +23,13 @@ const ArticleAuthorSchema = z.object({
 
 const ArticleSchema = z.object({
   id: z.number(),
-  title: z.object({ rendered: z.string() }),
+  title: z.string(),
   slug: z.string(),
   authors: ArticleAuthorSchema.array().optional(),
   categories: z.number().array(),
   featured_media: z.number(),
   date: z.iso.datetime({ local: true }),
-  excerpt: z.object({ rendered: z.string() }),
+  excerpt: z.string(),
   content: z.object({ rendered: z.string() }),
 });
 
@@ -63,7 +63,7 @@ function articleAuthorToAuthor(articleAuthor: ArticleAuthorResponse): Author {
 }
 
 function articleResponseToArticleData(articleRes: ArticleResponse) {
-  const cleanTitle = plainText(articleRes.title.rendered);
+  const cleanTitle = plainText(articleRes.title);
   const cleanAuthors = articleRes.authors
     ? articleRes.authors.map(articleAuthorToAuthor)
     : [];
@@ -75,7 +75,7 @@ function articleResponseToArticleData(articleRes: ArticleResponse) {
     featured_media: articleRes.featured_media,
     category: articleRes.categories[0],
     pubDate: formatDate(new Date(articleRes.date)),
-    excerpt: articleRes.excerpt.rendered,
+    excerpt: plainText(articleRes.excerpt),
     content: articleRes.content.rendered,
   };
 }
@@ -88,13 +88,13 @@ function categoryPostResponseToArticleCardPost(
     : [];
   return {
     id: categoryPostRes.id,
-    title: categoryPostRes.title.rendered,
+    title: plainText(categoryPostRes.title),
     slug: categoryPostRes.slug,
     authors: cleanAuthors,
     category: categoryPostRes.categories[0],
     featured_media: categoryPostRes.featured_media,
     pubDate: formatDate(new Date(categoryPostRes.date)),
-    excerpt: categoryPostRes.excerpt.rendered,
+    excerpt: plainText(categoryPostRes.excerpt),
   };
 }
 
