@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { categories } from "./constants";
 import type {
   ArticleCardData,
   ArticleData,
@@ -102,6 +103,19 @@ export async function retrieveCategoryPosts(
   offset: number,
   pageSize: number,
 ): Promise<CategoryPostsPage> {
+  const categoryExists = Object.values(categories).some(
+    (cat) => cat.id === categoryId,
+  );
+  if (!categoryExists) {
+    throw new Error(`Invalid category ID: ${categoryId}`);
+  }
+  if (offset < 0) {
+    throw new Error(`Offset must be non-negative: ${offset}`);
+  }
+  if (pageSize <= 0) {
+    throw new Error(`Page size must be greater than zero: ${pageSize}`);
+  }
+
   const url = new URL(`${BASE_URL}/posts`);
   url.searchParams.set("categories", String(categoryId));
   url.searchParams.set("orderby", "date");
