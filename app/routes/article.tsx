@@ -143,7 +143,7 @@ export default function Article({ params }: Route.ComponentProps) {
               </section>
             </section>
           </section>
-          <section className="bg-[url('/default_image.webp')] lg:min-h-150 w-full lg:w-1/2 article-featured">
+          <section className="bg-[url('/default_image.webp')] bg-vant-purple bg-contain bg-no-repeat bg-center lg:min-h-150 w-full lg:w-1/2 article-featured">
             {mediaAttrs && (
               <img
                 src={mediaAttrs.src}
