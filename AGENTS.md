@@ -12,7 +12,12 @@ Repo Location & Entry Points
 1. Source of truth: tsconfig.json, package.json, build.config.ts (if any), .vitestrc / .eslintrc.js
 2. Codegen triggers: check for CLI commands that regenerate files or type definitions before committing
 3. Typecheck first: if TypeScript, ensure type errors are caught before runtime checks (npm run typecheck)
-   Testing Conventions
+
+Backend
+- The project's backend is a WordPress REST API.
+- It has one custom endpoint for returning N random articles.
+
+  Testing Conventions
 
 - Integration test prerequisites: verify docker-compose.yml or infra services if tests need background processes
 - Flaky suite markers: look for flags like --update-snap, skipOnSlow, or CI environment markers in test files or scripts
