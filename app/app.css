@@ -524,3 +524,10 @@ section.latest-grid-small-images .article-card-image {
     font-size: 12px;
   }
 }
+
+.wp-block-image,
+figure {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}
